@@ -74,7 +74,7 @@ namespace JSAI.WinApp
                 ColumnCount = 1,
                 RowCount = 4,
             };
-            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 82F));
+            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 68F));
             root.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             root.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
@@ -146,7 +146,6 @@ namespace JSAI.WinApp
             ConfigureToolbarButton(_importWorkflowButton, "导入 JSON", (_, _) => ImportWorkflow(), Color.FromArgb(40, 50, 72), Color.White);
             ConfigureToolbarButton(_exportWorkflowButton, "导出 JSON", (_, _) => ExportWorkflow(), Color.FromArgb(40, 50, 72), Color.White);
             ConfigureToolbarButton(_modelCallLogButton, "模型调用日志", (_, _) => OpenModelCallLog(), Color.FromArgb(40, 50, 72), Color.White);
-            ConfigureToolbarButton(_runWorkflowButton, "执行工作流", async (_, _) => await RunWorkflowAsync(), Color.FromArgb(255, 122, 0), Color.Black);
             ConfigureToolbarButton(_modelSettingsButton, "模型设置", (_, _) => OpenModelSettings(), Color.FromArgb(255, 214, 102), Color.Black);
 
             _toolbarActionsPanel.Controls.Add(_newProjectButton);
@@ -156,7 +155,6 @@ namespace JSAI.WinApp
             _toolbarActionsPanel.Controls.Add(_importWorkflowButton);
             _toolbarActionsPanel.Controls.Add(_exportWorkflowButton);
             _toolbarActionsPanel.Controls.Add(_modelCallLogButton);
-            _toolbarActionsPanel.Controls.Add(_runWorkflowButton);
             _toolbarActionsPanel.Controls.Add(_modelSettingsButton);
 
             _newProjectButton.Text = "新建项目";
@@ -166,7 +164,6 @@ namespace JSAI.WinApp
             _importWorkflowButton.Text = "导入 JSON";
             _exportWorkflowButton.Text = "导出 JSON";
             _modelCallLogButton.Text = "模型调用日志";
-            _runWorkflowButton.Text = "执行工作流";
             _modelSettingsButton.Text = "模型设置";
 
             panel.Controls.Add(titlePanel, 0, 0);
@@ -450,9 +447,9 @@ namespace JSAI.WinApp
             {
                 var button = new Button
                 {
-                    Width = _document.ProjectMode == ProjectWorkspaceMode.DirectStudio ? 118 : 122,
+                    Width = _document.ProjectMode == ProjectWorkspaceMode.DirectStudio ? 118 : 134,
                     Height = _document.ProjectMode == ProjectWorkspaceMode.DirectStudio ? 48 : 42,
-                    Text = nodeType,
+                    Text = GetNodeLibraryButtonText(nodeType, index),
                     BackColor = Color.FromArgb(24, 31, 44),
                     ForeColor = Color.White,
                     FlatStyle = FlatStyle.Flat,
@@ -466,6 +463,16 @@ namespace JSAI.WinApp
             }
 
             _nodeLibraryButtonGrid.ResumeLayout();
+        }
+
+        private string GetNodeLibraryButtonText(string nodeType, int index)
+        {
+            if (_document.ProjectMode != ProjectWorkspaceMode.AiAnimeProject)
+            {
+                return nodeType;
+            }
+
+            return $"{index + 1}.{nodeType}";
         }
 
         private Control BuildAssetCard()

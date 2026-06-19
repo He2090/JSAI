@@ -24,6 +24,7 @@ namespace JSAI.WinApp
         private Label? _relayApiHintLabel;
         private GroupBox? _nodeDefaultsGroupBox;
         private TableLayoutPanel? _nodeDefaultsLayout;
+        private Button? _nodeDefaultsSettingsButton;
         private TabControl? _modelConfigTabs;
         private Panel? _localModelListHost;
         private Panel? _comfyUiModelListHost;
@@ -45,7 +46,7 @@ namespace JSAI.WinApp
             EnsureModelConfigurationTabs();
             EnsureRelayApiSection();
             NormalizeRelayApiSection();
-            EnsureNodeDefaultsSection();
+            EnsureNodeDefaultsButton();
             LayoutExtendedSections();
             if (ModelConfig.LocalOnlyMode && _relayApiGroupBox != null)
             {
@@ -358,6 +359,34 @@ namespace JSAI.WinApp
                 _nodeDefaultsGroupBox.Location = new Point(12, nodeDefaultsTop);
                 _nodeDefaultsGroupBox.Size = new Size(ClientSize.Width - 24, ClientSize.Height - nodeDefaultsTop - 12);
             }
+        }
+
+        private void EnsureNodeDefaultsButton()
+        {
+            if (_nodeDefaultsSettingsButton != null)
+            {
+                return;
+            }
+
+            _nodeDefaultsSettingsButton = new Button
+            {
+                Text = "节点默认模型设置...",
+                Location = new Point(12, 482),
+                Size = new Size(180, 34),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left,
+                UseVisualStyleBackColor = true,
+            };
+            _nodeDefaultsSettingsButton.Click += (_, _) =>
+            {
+                using var dialog = new NodeDefaultModelSettingsForm(_settings);
+                if (dialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    ModelConfig.Save(_settings);
+                    ReloadSettingsAndRefreshViews();
+                }
+            };
+            Controls.Add(_nodeDefaultsSettingsButton);
+            _nodeDefaultsSettingsButton.BringToFront();
         }
 
         private void NormalizeRelayApiSection()
@@ -836,7 +865,7 @@ namespace JSAI.WinApp
 
         private void ShowModelEditor(ModelInfo? existingModel = null)
         {
-            using var dialog = new AddModelForm(existingModel);
+            using var dialog = new AddModelForm(existingModel, GetActiveModelEditorKind(existingModel));
             if (dialog.ShowDialog(this) != DialogResult.OK)
             {
                 return;
@@ -850,13 +879,15 @@ namespace JSAI.WinApp
 
             if (ModelConfig.LocalOnlyMode)
             {
-                if (!ModelConfig.IsLocalEndpointUrl(model.Url) && !ModelConfig.IsGeminiModelUrl(model.Url))
+                if (!Uri.TryCreate(model.Url, UriKind.Absolute, out _))
                 {
-                    MessageBox.Show(this, "本地版允许添加本机/局域网模型地址，或 Google Gemini 云端文本地址。", "模型地址无效", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(this, "请填写合法的模型地址。", "模型地址无效", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                model.Source = ModelConfig.InferModelSource(model.Url);
+                model.Source = model.Source == ModelEndpointSource.Cloud
+                    ? ModelEndpointSource.Cloud
+                    : ModelConfig.InferModelSource(model.Url);
             }
 
             if (existingModel == null)
@@ -889,6 +920,28 @@ namespace JSAI.WinApp
 
             ModelConfig.Save(_settings);
             ReloadSettingsAndRefreshViews(ModelConfig.GetModelSelector(model));
+        }
+
+        private AddModelForm.ModelEditorKind GetActiveModelEditorKind(ModelInfo? existingModel)
+        {
+            if (existingModel != null)
+            {
+                if (ModelConfig.IsComfyUiEndpointUrl(existingModel.Url))
+                {
+                    return AddModelForm.ModelEditorKind.ComfyUi;
+                }
+
+                return ModelConfig.GetModelSource(existingModel) == ModelEndpointSource.Cloud
+                    ? AddModelForm.ModelEditorKind.Cloud
+                    : AddModelForm.ModelEditorKind.Local;
+            }
+
+            return _modelConfigTabs?.SelectedIndex switch
+            {
+                1 => AddModelForm.ModelEditorKind.ComfyUi,
+                2 => AddModelForm.ModelEditorKind.Cloud,
+                _ => AddModelForm.ModelEditorKind.Local,
+            };
         }
 
         private ListViewGroup GetModelGroup(ModelInfo model)

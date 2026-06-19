@@ -16,20 +16,33 @@ namespace JSAI.WinApp
     {
         private static readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(6) };
 
-        private const int ExpandedClientHeight = 430;
-        private const int CompactClientHeight = 392;
+        private const int FormWidth = 540;
+        private const int TopModeOffset = 44;
+        private const int ExpandedClientHeight = 474;
+        private const int CompactClientHeight = 436;
         private const int WorkflowRowShift = 38;
 
         private readonly ModelInfo? _editingModel;
+        private readonly ModelEditorKind? _initialKind;
+        private TabControl? _modeTabs;
+        private ModelEditorKind _currentKind = ModelEditorKind.Local;
         private bool _testPassed;
 
         public ModelInfo? ModelInfo { get; private set; }
 
-        public AddModelForm(ModelInfo? editingModel = null)
+        public AddModelForm(ModelInfo? editingModel = null, ModelEditorKind? initialKind = null)
         {
             InitializeComponent();
             txtKey.UseSystemPasswordChar = true;
             _editingModel = editingModel;
+            _initialKind = initialKind;
+        }
+
+        public enum ModelEditorKind
+        {
+            Local,
+            ComfyUi,
+            Cloud
         }
 
         private enum ModelProvider
@@ -45,6 +58,8 @@ namespace JSAI.WinApp
 
         private void AddModelForm_Load(object sender, EventArgs e)
         {
+            ConfigureExpandedEditorLayout();
+            EnsureModeTabs();
             comboCategory.DataSource = Enum.GetValues(typeof(ModelCategory));
             comboCategory.SelectedItem = ModelCategory.Text;
             LoadAvailableWorkflowJsonOptions();
@@ -75,9 +90,133 @@ namespace JSAI.WinApp
                 comboCategory.SelectedItem = _editingModel.Category;
             }
 
+            SelectInitialEditorKind();
+            ApplyEditorKindLabels();
+
             UpdateWorkflowJsonAvailability();
             MarkDirty();
             txtTestResult.Text = "测试结果：还未测试";
+        }
+
+        private void ConfigureExpandedEditorLayout()
+        {
+            ClientSize = new Size(FormWidth, ExpandedClientHeight);
+            Text = _editingModel == null ? "新增模型" : "编辑模型";
+
+            foreach (var label in new[] { label1, label2, label3, label4, label5, label6 })
+            {
+                label.AutoSize = false;
+                label.Left = 12;
+                label.Width = 112;
+            }
+
+            foreach (var input in new Control[] { txtId, txtName, comboWorkflowJson, txtUrl, txtKey, comboCategory })
+            {
+                input.Left = 132;
+                input.Width = 384;
+            }
+
+            btnTest.Left = 132;
+            btnTest.Text = "测试连接";
+            txtTestResult.Left = 132;
+            txtTestResult.Width = 384;
+            btnOk.Left = 306;
+            btnOk.Text = "确定";
+            btnCancel.Left = 416;
+            btnCancel.Text = "取消";
+        }
+
+        private void EnsureModeTabs()
+        {
+            if (_modeTabs != null)
+            {
+                return;
+            }
+
+            _modeTabs = new TabControl
+            {
+                Left = 12,
+                Top = 8,
+                Width = 504,
+                Height = 34,
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
+            };
+            _modeTabs.TabPages.Add(new TabPage("本地模型"));
+            _modeTabs.TabPages.Add(new TabPage("ComfyUI API"));
+            _modeTabs.TabPages.Add(new TabPage("云端模型"));
+            _modeTabs.SelectedIndexChanged += (_, _) =>
+            {
+                _currentKind = _modeTabs.SelectedIndex switch
+                {
+                    1 => ModelEditorKind.ComfyUi,
+                    2 => ModelEditorKind.Cloud,
+                    _ => ModelEditorKind.Local,
+                };
+                ApplyEditorKindLabels();
+                UpdateWorkflowJsonAvailability();
+                MarkDirty();
+            };
+
+            foreach (var control in Controls.Cast<Control>().Where(control => control != _modeTabs).ToList())
+            {
+                control.Top += TopModeOffset;
+            }
+
+            Controls.Add(_modeTabs);
+            _modeTabs.BringToFront();
+        }
+
+        private void SelectInitialEditorKind()
+        {
+            _currentKind = _initialKind
+                           ?? (_editingModel == null
+                               ? ModelEditorKind.Local
+                               : ModelConfig.IsComfyUiEndpointUrl(_editingModel.Url)
+                                   ? ModelEditorKind.ComfyUi
+                                   : ModelConfig.GetModelSource(_editingModel) == ModelEndpointSource.Cloud
+                                       ? ModelEditorKind.Cloud
+                                       : ModelEditorKind.Local);
+
+            if (_modeTabs != null)
+            {
+                _modeTabs.SelectedIndex = _currentKind switch
+                {
+                    ModelEditorKind.ComfyUi => 1,
+                    ModelEditorKind.Cloud => 2,
+                    _ => 0,
+                };
+            }
+        }
+
+        private void ApplyEditorKindLabels()
+        {
+            switch (_currentKind)
+            {
+                case ModelEditorKind.ComfyUi:
+                    label1.Text = "配置ID";
+                    label2.Text = "API名称";
+                    label6.Text = "JSON名称";
+                    label4.Text = "ComfyUI地址";
+                    label5.Text = "Key（可选）";
+                    label3.Text = "模型类别";
+                    break;
+                case ModelEditorKind.Cloud:
+                    label1.Text = "模型名称/ID";
+                    label2.Text = "平台名称";
+                    label6.Text = "工作流JSON";
+                    label4.Text = "模型地址";
+                    label5.Text = "模型Key";
+                    label3.Text = "模型类别";
+                    break;
+                default:
+                    label1.Text = "模型ID";
+                    label2.Text = "模型名称";
+                    label6.Text = "工作流JSON";
+                    label4.Text = "模型地址";
+                    label5.Text = "模型Key";
+                    label3.Text = "模型类别";
+                    break;
+            }
         }
 
         private void MarkDirty()
@@ -176,7 +315,9 @@ namespace JSAI.WinApp
                 Url = url,
                 Key = key,
                 Category = category,
-                Source = ModelConfig.InferModelSource(url)
+                Source = _currentKind == ModelEditorKind.Cloud
+                    ? ModelEndpointSource.Cloud
+                    : ModelConfig.InferModelSource(url)
             };
 
             DialogResult = DialogResult.OK;
@@ -188,22 +329,23 @@ namespace JSAI.WinApp
             var category = comboCategory.SelectedItem is ModelCategory selectedCategory
                 ? selectedCategory
                 : ModelCategory.Text;
-            var visible = ShouldShowWorkflowJsonField(txtUrl.Text, category);
+            var visible = _currentKind == ModelEditorKind.ComfyUi ||
+                          ShouldShowWorkflowJsonField(txtUrl.Text, category);
 
             label6.Visible = visible;
             comboWorkflowJson.Visible = visible;
 
             var shift = visible ? 0 : -WorkflowRowShift;
-            label4.Top = 132 + shift;
-            txtUrl.Top = 129 + shift;
-            label5.Top = 170 + shift;
-            txtKey.Top = 167 + shift;
-            label3.Top = 208 + shift;
-            comboCategory.Top = 205 + shift;
-            btnTest.Top = 276 + shift;
-            txtTestResult.Top = 316 + shift;
-            btnOk.Top = 386 + shift;
-            btnCancel.Top = 386 + shift;
+            label4.Top = 132 + shift + TopModeOffset;
+            txtUrl.Top = 129 + shift + TopModeOffset;
+            label5.Top = 170 + shift + TopModeOffset;
+            txtKey.Top = 167 + shift + TopModeOffset;
+            label3.Top = 208 + shift + TopModeOffset;
+            comboCategory.Top = 205 + shift + TopModeOffset;
+            btnTest.Top = 276 + shift + TopModeOffset;
+            txtTestResult.Top = 316 + shift + TopModeOffset;
+            btnOk.Top = 386 + shift + TopModeOffset;
+            btnCancel.Top = 386 + shift + TopModeOffset;
             ClientSize = new Size(ClientSize.Width, visible ? ExpandedClientHeight : CompactClientHeight);
         }
 

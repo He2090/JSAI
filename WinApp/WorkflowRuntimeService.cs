@@ -8232,6 +8232,14 @@ public sealed class WorkflowRuntimeService
 	private static string GetStoryboardVideoQualityMode(WorkflowNode node)
 	{
 		string a = (node.Params?.StoryboardVideoQuality ?? string.Empty).Trim();
+		if (string.Equals(a, "720P", StringComparison.OrdinalIgnoreCase))
+		{
+			return "std";
+		}
+		if (string.Equals(a, "1080P", StringComparison.OrdinalIgnoreCase))
+		{
+			return "pro";
+		}
 		if (string.Equals(a, "标准", StringComparison.OrdinalIgnoreCase))
 		{
 			return "std";
@@ -8245,7 +8253,12 @@ public sealed class WorkflowRuntimeService
 
 	private static string GetStoryboardVideoQualityCode(WorkflowNode node)
 	{
-		return "standard";
+		string value = (node.Params?.StoryboardVideoQuality ?? string.Empty).Trim();
+		return string.Equals(value, "720P", StringComparison.OrdinalIgnoreCase) ||
+		       string.Equals(value, "标清", StringComparison.OrdinalIgnoreCase) ||
+		       string.Equals(value, "标准", StringComparison.OrdinalIgnoreCase)
+			? "720p"
+			: "1080p";
 	}
 
 	private static string GetStoryboardVideoYunWuMode(WorkflowNode node)
@@ -8355,7 +8368,7 @@ public sealed class WorkflowRuntimeService
 			}
 			await Task.Delay(TimeSpan.FromSeconds(5.0), cancellationToken);
 		}
-		throw new InvalidOperationException("视频任务轮询超时。");
+		throw new InvalidOperationException("视频任务轮询超时（已等待约10分钟）。请前往平台查看任务状态，或稍后使用“按ID获取”回收视频。");
 	}
 
 	private static async Task<GeneratedArtifact> PollYunWuVideoTaskAsync(ModelInfo model, WorkflowNode node, Uri statusUri, CancellationToken cancellationToken)
@@ -8476,9 +8489,9 @@ public sealed class WorkflowRuntimeService
 		}
 		node.Params ??= new WorkflowNodeParameters();
 		string timeoutTaskId = node.Params.StoryboardVideoTaskId.OrDefault("未记录");
-		node.Params.StoryboardVideoLastError = $"云雾视频任务轮询超时。任务ID：{timeoutTaskId}，查询地址：{statusUri}";
-		ModelCallLogService.LogFailure(node.Type, model, "云雾视频任务轮询超时。", null, $"任务ID：{timeoutTaskId}；查询地址：{statusUri}");
-		throw new InvalidOperationException($"云雾视频任务轮询超时。任务ID：{timeoutTaskId}");
+		node.Params.StoryboardVideoLastError = $"云雾视频任务轮询超时（已等待约10分钟）。任务ID：{timeoutTaskId}，查询地址：{statusUri}";
+		ModelCallLogService.LogFailure(node.Type, model, "云雾视频任务轮询超时（已等待约10分钟）。", null, $"任务ID：{timeoutTaskId}；查询地址：{statusUri}");
+		throw new InvalidOperationException($"云雾视频任务轮询超时（已等待约10分钟）。请前往平台查看任务状态，或稍后使用“按ID获取”回收视频。任务ID：{timeoutTaskId}");
 	}
 
 	private static bool TryFindYunWuVideoUrl(JsonElement element, out string value)

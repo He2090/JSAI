@@ -462,12 +462,17 @@ namespace JSAI.WinApp
             configGrid.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
             configGrid.RowStyles.Add(new RowStyle(SizeType.Absolute, 54F));
 
-            configGrid.Controls.Add(CreateConfigLabel("模型名称"), 0, 0);
-            configGrid.Controls.Add(CreateConfigLabel("模型ID"), 1, 0);
-            configGrid.Controls.Add(CreateConfigLabel("工作流"), 2, 0);
+            var selectedVideoModel = ResolveSelectedStoryboardVideoModel();
+            var selectedIsCloud = selectedVideoModel != null &&
+                                  ModelConfig.GetModelSource(selectedVideoModel) == ModelEndpointSource.Cloud;
+            var selectedIsComfyUi = selectedVideoModel == null || ModelConfig.IsComfyUiEndpointUrl(selectedVideoModel.Url);
+
+            configGrid.Controls.Add(CreateConfigLabel(selectedIsCloud ? "模型平台名称" : selectedIsComfyUi ? "API名称" : "模型名称"), 0, 0);
+            configGrid.Controls.Add(CreateConfigLabel(selectedIsCloud ? "模型名称" : "模型ID"), 1, 0);
+            configGrid.Controls.Add(CreateConfigLabel(selectedIsCloud ? "清晰度" : selectedIsComfyUi ? "JSON名称" : "工作流"), 2, 0);
             configGrid.Controls.Add(BuildPlatformEditor(), 0, 1);
             configGrid.Controls.Add(BuildModelFamilyEditor(), 1, 1);
-            configGrid.Controls.Add(BuildSubModelEditor(), 2, 1);
+            configGrid.Controls.Add(selectedIsCloud ? BuildCloudQualityEditor() : BuildSubModelEditor(), 2, 1);
             configGrid.Controls.Add(BuildAutoVideoRuleHint(), 0, 2);
             configGrid.SetColumnSpan(configGrid.GetControlFromPosition(0, 2)!, 3);
             shell.Controls.Add(configGrid, 0, 1);
@@ -819,6 +824,28 @@ namespace JSAI.WinApp
             return row;
         }
 
+        private Control BuildCloudQualityEditor()
+        {
+            var combo = CreateConfigComboBox();
+            PopulateConfigComboBox(combo, new[]
+            {
+                new ConfigOptionItem("1080P", "1080P"),
+                new ConfigOptionItem("720P", "720P"),
+            }, NormalizeCloudVideoQuality(_node?.Params?.StoryboardVideoQuality), allowTextEntry: false);
+            combo.SelectionChangeCommitted += (_, _) =>
+            {
+                if (_node?.Params == null)
+                {
+                    return;
+                }
+
+                _node.Params.StoryboardVideoQuality = combo.SelectedValue?.ToString().OrDefault(combo.Text) ?? "1080P";
+                EntryChanged?.Invoke(this, EventArgs.Empty);
+                Rebuild(preserveScroll: true);
+            };
+            return combo;
+        }
+
         private IEnumerable<ConfigOptionItem> GetPlatformOptions()
         {
             return BuildVideoModelOptions(model => string.IsNullOrWhiteSpace(model.Name) ? model.Id : model.Name);
@@ -852,6 +879,24 @@ namespace JSAI.WinApp
 
                 yield return new ConfigOptionItem(ModelConfig.GetModelSelector(model), displayName);
             }
+        }
+
+        private ModelInfo? ResolveSelectedStoryboardVideoModel()
+        {
+            var selector = GetSelectedStoryboardVideoModelSelector();
+            if (string.IsNullOrWhiteSpace(selector))
+            {
+                return null;
+            }
+
+            var settings = ModelConfig.Load();
+            return ModelConfig.FindModel(settings, ModelCategory.Video, selector);
+        }
+
+        private static string NormalizeCloudVideoQuality(string? quality)
+        {
+            var value = (quality ?? string.Empty).Trim();
+            return string.Equals(value, "720P", StringComparison.OrdinalIgnoreCase) ? "720P" : "1080P";
         }
 
         private string GetSelectedStoryboardVideoModelSelector()

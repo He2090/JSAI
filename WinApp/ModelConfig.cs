@@ -295,14 +295,12 @@ namespace JSAI.WinApp
                 return false;
             }
 
-            if (!IsLocalEndpointUrl(model.Url) && !IsGeminiModelUrl(model.Url))
+            if (!Uri.TryCreate(model.Url, UriKind.Absolute, out _))
             {
                 return false;
             }
  
-            model.Source = IsLocalEndpointUrl(model.Url)
-                ? ModelEndpointSource.Local
-                : ModelEndpointSource.Cloud;
+            model.Source = InferModelSource(model.Url);
             return true;
         }
 

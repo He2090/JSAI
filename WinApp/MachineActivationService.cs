@@ -26,7 +26,13 @@ internal static class MachineActivationService
         WriteIndented = true,
     };
 
-    private static string ActivationPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "machine-license.dat");
+    private static string ActivationDirectory => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "JSAI");
+
+    private static string ActivationPath => Path.Combine(ActivationDirectory, "machine-license.dat");
+
+    private static string LegacyActivationPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "machine-license.dat");
 
     public static MachineActivationStatus LoadStatus()
     {
@@ -124,14 +130,31 @@ internal static class MachineActivationService
 
     private static MachineActivationCache? LoadCache()
     {
-        if (!File.Exists(ActivationPath))
+        var cache = LoadCacheFromPath(ActivationPath);
+        if (cache != null)
+        {
+            return cache;
+        }
+
+        cache = LoadCacheFromPath(LegacyActivationPath);
+        if (cache != null && !File.Exists(ActivationPath))
+        {
+            SaveCache(cache);
+        }
+
+        return cache;
+    }
+
+    private static MachineActivationCache? LoadCacheFromPath(string path)
+    {
+        if (!File.Exists(path))
         {
             return null;
         }
 
         try
         {
-            var protectedBytes = File.ReadAllBytes(ActivationPath);
+            var protectedBytes = File.ReadAllBytes(path);
             var jsonBytes = ProtectedData.Unprotect(protectedBytes, null, DataProtectionScope.CurrentUser);
             return JsonSerializer.Deserialize<MachineActivationCache>(Encoding.UTF8.GetString(jsonBytes), JsonOptions);
         }
@@ -145,6 +168,7 @@ internal static class MachineActivationService
     {
         var json = JsonSerializer.Serialize(cache, JsonOptions);
         var protectedBytes = ProtectedData.Protect(Encoding.UTF8.GetBytes(json), null, DataProtectionScope.CurrentUser);
+        Directory.CreateDirectory(ActivationDirectory);
         File.WriteAllBytes(ActivationPath, protectedBytes);
     }
 
