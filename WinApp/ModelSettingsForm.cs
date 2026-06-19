@@ -24,6 +24,10 @@ namespace JSAI.WinApp
         private Label? _relayApiHintLabel;
         private GroupBox? _nodeDefaultsGroupBox;
         private TableLayoutPanel? _nodeDefaultsLayout;
+        private TabControl? _modelConfigTabs;
+        private Panel? _localModelListHost;
+        private Panel? _comfyUiModelListHost;
+        private Panel? _cloudModelListHost;
         private bool _syncingNodeDefaults;
         private readonly ListViewGroup _localModelsGroup = new("本地模型");
         private readonly ListViewGroup _cloudModelsGroup = new("云端模型");
@@ -38,6 +42,7 @@ namespace JSAI.WinApp
         private void ModelSettingsForm_Load(object sender, EventArgs e)
         {
             ConfigureExpandedLayout();
+            EnsureModelConfigurationTabs();
             EnsureRelayApiSection();
             NormalizeRelayApiSection();
             EnsureNodeDefaultsSection();
@@ -56,27 +61,32 @@ namespace JSAI.WinApp
             ClientSize = new Size(1040, 860);
             MinimumSize = new Size(1040, 860);
 
-            listModels.Location = new Point(12, 52);
-            listModels.Size = new Size(ClientSize.Width - 24, 250);
-            listModels.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            Text = "模型设置";
+            listModels.Dock = DockStyle.Fill;
 
             var buttonY = 12;
             var buttonGap = 8;
             btnAddModel.Location = new Point(12, buttonY);
             btnAddModel.Size = new Size(96, 30);
+            btnAddModel.Text = "新模型 +";
             btnDeleteModel.Location = new Point(btnAddModel.Right + buttonGap, buttonY);
             btnDeleteModel.Size = new Size(96, 30);
+            btnDeleteModel.Text = "删除模型";
             btnSetTextModel.Location = new Point(btnDeleteModel.Right + 22, buttonY);
             btnSetTextModel.Size = new Size(118, 30);
+            btnSetTextModel.Text = "设为文本模型";
             btnSetImagePromptTextModel.Location = new Point(btnSetTextModel.Right + buttonGap, buttonY);
             btnSetImagePromptTextModel.Size = new Size(146, 30);
+            btnSetImagePromptTextModel.Text = "设为图片提示词";
             btnSetImageModel.Location = new Point(btnSetImagePromptTextModel.Right + buttonGap, buttonY);
             btnSetImageModel.Size = new Size(118, 30);
+            btnSetImageModel.Text = "设为图片模型";
             btnSetVideoModel.Location = new Point(btnSetImageModel.Right + buttonGap, buttonY);
             btnSetVideoModel.Size = new Size(118, 30);
+            btnSetVideoModel.Text = "设为视频模型";
 
             groupBox1.Text = "当前选择";
-            groupBox1.Location = new Point(12, 314);
+            groupBox1.Location = new Point(12, 400);
             groupBox1.Size = new Size(ClientSize.Width - 24, 74);
             groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 
@@ -95,14 +105,130 @@ namespace JSAI.WinApp
             lblImagePromptTextModel.Visible = false;
             lblVideoModel.Visible = false;
 
+            colName.Text = "模型名称";
             colName.Width = 180;
             colSource.Text = "来源";
             colSource.Width = 90;
+            colCategory.Text = "类别";
             colCategory.Width = 80;
+            colUrl.Text = "地址";
             colUrl.Width = 260;
             colKey.Width = 120;
             colId.Width = 180;
             listModels.ShowGroups = true;
+        }
+
+        private void EnsureModelConfigurationTabs()
+        {
+            if (_modelConfigTabs != null)
+            {
+                return;
+            }
+
+            _modelConfigTabs = new TabControl
+            {
+                Location = new Point(12, 52),
+                Size = new Size(ClientSize.Width - 24, 340),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
+            };
+
+            var localTab = new TabPage("本地模型配置");
+            var comfyTab = new TabPage("ComfyUI API 配置");
+            var cloudTab = new TabPage("云端模型配置");
+
+            _localModelListHost = CreateModelConfigurationPage(
+                localTab,
+                "用于 Ollama、Stable Diffusion WebUI、局域网服务等本机/内网模型。地址应使用 http://127.0.0.1、localhost 或局域网 IP。");
+            _comfyUiModelListHost = CreateModelConfigurationPage(
+                comfyTab,
+                "ComfyUI API 使用方式：先启动 ComfyUI，并确认可访问 http://127.0.0.1:8188；模型地址填写 ComfyUI 根地址，ID 填检查点或工作流需要的模型名；视频/图片工作流请在“子模型/工作流”里选择对应 JSON。");
+            _cloudModelListHost = CreateModelConfigurationPage(
+                cloudTab,
+                "用于 Gemini 等云端文本接口。请填写云端 API 地址、Key 和模型 ID；涉及密钥的配置会在保存时加密。");
+
+            _modelConfigTabs.TabPages.Add(localTab);
+            _modelConfigTabs.TabPages.Add(comfyTab);
+            _modelConfigTabs.TabPages.Add(cloudTab);
+            _modelConfigTabs.SelectedIndexChanged += (_, _) =>
+            {
+                var selectedModelId = GetSelectedModelId();
+                MoveModelListToActiveTab();
+                RefreshModelList(selectedModelId);
+            };
+
+            Controls.Remove(listModels);
+            Controls.Add(_modelConfigTabs);
+            _modelConfigTabs.BringToFront();
+            MoveModelListToActiveTab();
+        }
+
+        private Panel CreateModelConfigurationPage(TabPage page, string hint)
+        {
+            var layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                Padding = new Padding(8),
+            };
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 58F));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+
+            var hintLabel = new Label
+            {
+                Dock = DockStyle.Fill,
+                ForeColor = Color.FromArgb(68, 68, 68),
+                TextAlign = ContentAlignment.MiddleLeft,
+                Text = hint,
+            };
+
+            var host = new Panel
+            {
+                Dock = DockStyle.Fill,
+            };
+
+            layout.Controls.Add(hintLabel, 0, 0);
+            layout.Controls.Add(host, 0, 1);
+            page.Controls.Add(layout);
+            return host;
+        }
+
+        private void MoveModelListToActiveTab()
+        {
+            var host = GetActiveModelListHost();
+            if (host == null)
+            {
+                return;
+            }
+
+            if (listModels.Parent != host)
+            {
+                listModels.Parent?.Controls.Remove(listModels);
+                host.Controls.Add(listModels);
+            }
+
+            listModels.Dock = DockStyle.Fill;
+        }
+
+        private Panel? GetActiveModelListHost()
+        {
+            return _modelConfigTabs?.SelectedIndex switch
+            {
+                1 => _comfyUiModelListHost,
+                2 => _cloudModelListHost,
+                _ => _localModelListHost,
+            };
+        }
+
+        private bool ShouldShowModelInActiveTab(ModelInfo model)
+        {
+            var isComfyUi = ModelConfig.IsComfyUiEndpointUrl(model.Url);
+            return _modelConfigTabs?.SelectedIndex switch
+            {
+                1 => isComfyUi,
+                2 => !isComfyUi && ModelConfig.GetModelSource(model) == ModelEndpointSource.Cloud,
+                _ => !isComfyUi && ModelConfig.GetModelSource(model) == ModelEndpointSource.Local,
+            };
         }
 
         private void EnsureRelayApiSection()
@@ -222,13 +348,13 @@ namespace JSAI.WinApp
         {
             if (_relayApiGroupBox != null)
             {
-                _relayApiGroupBox.Location = new Point(12, 396);
+                _relayApiGroupBox.Location = new Point(12, 482);
                 _relayApiGroupBox.Size = new Size(ClientSize.Width - 24, 154);
             }
 
             if (_nodeDefaultsGroupBox != null)
             {
-                var nodeDefaultsTop = ModelConfig.LocalOnlyMode ? 396 : 558;
+                var nodeDefaultsTop = ModelConfig.LocalOnlyMode ? 482 : 644;
                 _nodeDefaultsGroupBox.Location = new Point(12, nodeDefaultsTop);
                 _nodeDefaultsGroupBox.Size = new Size(ClientSize.Width - 24, ClientSize.Height - nodeDefaultsTop - 12);
             }
@@ -408,6 +534,7 @@ namespace JSAI.WinApp
 
             ListViewItem? preferredItem = null;
             foreach (var model in _settings.Models
+                .Where(ShouldShowModelInActiveTab)
                 .OrderBy(item => ModelConfig.GetModelSource(item))
                 .ThenBy(item => item.Category)
                 .ThenBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase))
@@ -723,13 +850,13 @@ namespace JSAI.WinApp
 
             if (ModelConfig.LocalOnlyMode)
             {
-                if (!ModelConfig.IsLocalEndpointUrl(model.Url))
+                if (!ModelConfig.IsLocalEndpointUrl(model.Url) && !ModelConfig.IsGeminiModelUrl(model.Url))
                 {
-                    MessageBox.Show(this, "本地版只允许添加本机或局域网模型地址。", "本地模型地址无效", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(this, "本地版允许添加本机/局域网模型地址，或 Google Gemini 云端文本地址。", "模型地址无效", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                model.Source = ModelEndpointSource.Local;
+                model.Source = ModelConfig.InferModelSource(model.Url);
             }
 
             if (existingModel == null)

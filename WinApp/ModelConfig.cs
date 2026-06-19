@@ -792,10 +792,36 @@ namespace JSAI.WinApp
         {
             return source switch
             {
-                ModelEndpointSource.Local => "鏈湴",
-                ModelEndpointSource.Cloud => "浜戠",
+                ModelEndpointSource.Local => "本地",
+                ModelEndpointSource.Cloud => "云端",
                 _ => "未识别",
             };
+        }
+
+        public static bool IsComfyUiEndpointUrl(string? url)
+        {
+            if (string.IsNullOrWhiteSpace(url) || !Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            {
+                return false;
+            }
+
+            var text = url.Trim();
+            if (text.Contains("comfy", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (uri.Port == 8188 || uri.Port == 8000)
+            {
+                return true;
+            }
+
+            var path = uri.AbsolutePath ?? string.Empty;
+            return path.Contains("/object_info", StringComparison.OrdinalIgnoreCase) ||
+                   path.Contains("/prompt", StringComparison.OrdinalIgnoreCase) ||
+                   path.Contains("/queue", StringComparison.OrdinalIgnoreCase) ||
+                   path.Contains("/history", StringComparison.OrdinalIgnoreCase) ||
+                   path.Contains("/view", StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool IsLocalEndpointUrl(string? url)

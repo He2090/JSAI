@@ -192,7 +192,7 @@ namespace JSAI.WinApp
             this.lblImagePromptTextModel.Name = "lblImagePromptTextModel";
             this.lblImagePromptTextModel.Size = new System.Drawing.Size(177, 20);
             this.lblImagePromptTextModel.TabIndex = 3;
-            this.lblImagePromptTextModel.Text = "鍥剧墖鎻愮ず璇嶆ā鍨嬶細鏈€夋嫨";
+            this.lblImagePromptTextModel.Text = "图片提示词模型：未选择";
             // 
             // lblTextModel
             // 
