@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0",
+  "packageUrl": "",
+  "channel": "stable",
+  "mandatory": false,
+  "notes": "Initial release manifest."
+}

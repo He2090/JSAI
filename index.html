@@ -1,0 +1,1795 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>工具主入口</title>
+  <style>
+    :root {
+      --bg: #111;
+      --panel: #1c1c1c;
+      --panel-border: #2c2c2c;
+      --text: #e8e8e8;
+      --accent: #4aa1ff;
+      --shadow: rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      height: 56px;
+      border-bottom: 1px solid var(--panel-border);
+      background: radial-gradient(circle at top, rgba(74, 161, 255, 0.18), transparent 70%);
+      backdrop-filter: blur(10px);
+    }
+
+    header .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      font-size: 1.05rem;
+    }
+
+    header nav {
+      display: flex;
+      gap: 14px;
+    }
+
+    header nav button {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 160ms ease;
+      font-size: 0.9rem;
+    }
+
+    header nav button:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 280px;
+      min-width: 220px;
+      background: var(--panel);
+      border-right: 1px solid var(--panel-border);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+    }
+
+    .sidebar h2 {
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+      letter-spacing: 0.05em;
+    }
+
+    .sidebar .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sidebar .menu button {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      text-align: left;
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: all 160ms ease;
+    }
+
+    .sidebar .menu button:hover {
+      background: rgba(255, 255, 255, 0.10);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      color: rgba(255, 255, 255, 0.88);
+    }
+
+    .panel.hidden {
+      display: none;
+    }
+
+    .panel h3 {
+      margin: 0;
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+    }
+
+    .node-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .node-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffe066;
+      text-align: left;
+      cursor: pointer;
+      transition: background 160ms ease;
+    }
+
+    .node-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .asset-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .asset-actions button {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(74, 161, 255, 0.16);
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    .asset-actions button:hover {
+      background: rgba(74, 161, 255, 0.26);
+    }
+
+    .asset-note {
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.62);
+    }
+
+    .asset-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 360px;
+      overflow-y: auto;
+    }
+
+    .asset-empty {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px dashed rgba(255, 255, 255, 0.16);
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 0.82rem;
+    }
+
+    .asset-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .asset-preview {
+      width: 100%;
+      max-height: 120px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .asset-file-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 72px;
+      border-radius: 8px;
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+    }
+
+    .asset-name {
+      font-size: 0.84rem;
+      font-weight: 600;
+      line-height: 1.25;
+      word-break: break-all;
+    }
+
+    .asset-info {
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    .asset-item-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .asset-item-actions button {
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .asset-item-actions button:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .canvas {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(135deg, #10131a 0%, #11151d 35%, #0d131a 100%);
+      overflow: hidden;
+    }
+
+    .draggable {
+      position: absolute;
+      width: 260px;
+      min-height: 120px;
+      border: 2px solid rgba(74, 161, 255, 0.85);
+      border-radius: 14px;
+      padding: 14px;
+      background: rgba(30, 40, 58, 0.84);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+      cursor: grab;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .draggable:active {
+      cursor: grabbing;
+    }
+
+    .draggable h4 {
+      margin: 0;
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+    }
+
+    .draggable p {
+      margin: 0;
+      font-size: 0.88rem;
+      color: rgba(255, 255, 255, 0.72);
+      line-height: 1.35;
+    }
+
+    .canvas-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .canvas-header h2 {
+      font-size: 1rem;
+      margin: 0;
+    }
+
+    .canvas-area {
+      flex: 1;
+      position: relative;
+      padding: 16px;
+      overflow: auto;
+      user-select: none;
+    }
+
+    .connections-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: all;
+      overflow: visible;
+      z-index: 1;
+    }
+
+    .connection-buttons-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .connection-buttons-layer button {
+      pointer-events: all;
+      border: none;
+      border-radius: 50%;
+      padding: 0;
+      width: 22px;
+      height: 22px;
+      font-size: 10px;
+      font-weight: 700;
+      background: rgba(255, 80, 80, 0.8);
+      color: rgba(255, 255, 255, 0.95);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15);
+    }
+
+    .connection-buttons-layer button:hover {
+      background: rgba(255, 80, 80, 1);
+    }
+
+    .connections-layer path,
+    .connections-layer g {
+      pointer-events: all;
+    }
+
+    .model-settings {
+      position: fixed;
+      left: 16px;
+      bottom: 16px;
+      background: rgba(18, 25, 40, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 10px 12px;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+      z-index: 10;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.85rem;
+      width: 220px;
+    }
+
+    .model-settings label {
+      display: block;
+      font-size: 0.78rem;
+      margin-bottom: 6px;
+      opacity: 0.8;
+    }
+
+    .model-settings select {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(0, 0, 0, 0.35);
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.85rem;
+    }
+
+    .model-settings-button {
+      position: fixed;
+      left: 16px;
+      bottom: 16px;
+      z-index: 20;
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(18, 25, 40, 0.92);
+      color: rgba(255, 255, 255, 0.9);
+      cursor: pointer;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+      font-size: 0.85rem;
+    }
+
+    .model-settings-button:hover {
+      background: rgba(18, 25, 40, 1);
+    }
+
+    .connection {
+      pointer-events: all;
+      cursor: pointer;
+      transition: stroke 180ms ease, stroke-width 180ms ease;
+    }
+
+    .connection.highlight {
+      stroke: #ffd54f;
+      stroke-width: 6;
+    }
+
+    .connection-delete {
+      cursor: pointer;
+      user-select: none;
+      pointer-events: all;
+    }
+
+    .connection-delete circle {
+      fill: rgba(255, 80, 80, 0.72);
+      stroke: rgba(255, 255, 255, 0.9);
+      stroke-width: 1;
+      opacity: 0.85;
+      transition: opacity 120ms ease;
+      pointer-events: all;
+    }
+
+    .connection-delete:hover circle {
+      opacity: 1;
+    }
+
+    .connection-delete text {
+      font-size: 10px;
+      font-weight: 700;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      pointer-events: all;
+      fill: rgba(255, 255, 255, 0.9);
+    }
+
+    .nodes-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+    }
+
+    .canvas-area .placeholder {
+      width: 100%;
+      height: 100%;
+      border: 2px dashed rgba(255, 255, 255, 0.16);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.55);
+      text-align: center;
+      padding: 32px;
+      font-size: 1.05rem;
+      line-height: 1.4;
+      z-index: 0;
+    }
+
+    .connection {
+      stroke: rgba(74, 161, 255, 0.65);
+      stroke-width: 3;
+      fill: none;
+    }
+
+    .node {
+      position: absolute;
+      width: 240px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(18, 25, 40, 0.88);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+      color: rgba(255, 255, 255, 0.9);
+      display: flex;
+      flex-direction: column;
+      z-index: 3;
+    }
+
+    .node-header {
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: grab;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .node-header:active {
+      cursor: grabbing;
+    }
+
+    .node-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .handle {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(74, 161, 255, 0.85);
+      border: 2px solid rgba(255, 255, 255, 0.65);
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease;
+    }
+
+    .handle:hover {
+      transform: scale(1.2);
+      background: rgba(74, 161, 255, 1);
+    }
+
+    .handle.in {
+      margin-left: 10px;
+    }
+
+    .handle.out {
+      margin-right: 10px;
+    }
+
+    .node-body {
+      padding: 10px 12px;
+      font-size: 0.85rem;
+      line-height: 1.35;
+      min-height: 90px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .node-body textarea {
+      width: 100%;
+      min-height: 60px;
+      resize: none;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(0, 0, 0, 0.35);
+      color: rgba(255, 255, 255, 0.92);
+      padding: 8px;
+      font-family: inherit;
+      font-size: 0.85rem;
+    }
+
+    .node-output {
+      padding: 8px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.82rem;
+      min-height: 40px;
+      white-space: pre-wrap;
+    }
+
+    .node-run {
+      padding: 2px 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(74, 161, 255, 0.22);
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .node-run:hover {
+      background: rgba(74, 161, 255, 0.32);
+    }
+
+    .node-delete {
+      padding: 2px 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 80, 80, 0.25);
+      color: rgba(255, 200, 200, 0.95);
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .node-delete:hover {
+      background: rgba(255, 80, 80, 0.4);
+    }
+
+    @media (max-width: 860px) {
+      .sidebar {
+        width: 240px;
+      }
+    }
+
+    @media (max-width: 740px) {
+      .content {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        min-width: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--panel-border);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <span>⚙️ 工具主入口</span>
+      </div>
+      <nav>
+        <button type="button">文件</button>
+        <button type="button">编辑</button>
+        <button type="button">查看</button>
+        <button type="button">帮助</button>
+      </nav>
+    </header>
+
+    <div class="content">
+      <aside class="sidebar" aria-label="左侧菜单栏">
+        <h2>工具面板</h2>
+        <div class="menu">
+          <button type="button" data-panel="newProject">新建项目</button>
+          <button type="button" data-panel="nodes">节点列表</button>
+          <button type="button" data-panel="assets">本地资产</button>
+          <button type="button" data-panel="save">保存工作流</button>
+          <button type="button" id="restoreLastWorkflow">恢复上次流程</button>
+        </div>
+
+        <div class="panel" id="panel-newProject">
+          <h3>新建项目</h3>
+          <p>在这里创建新的项目。</p>
+          <button type="button" id="createProject">创建新项目</button>
+        </div>
+
+        <div class="panel" id="panel-nodes">
+          <h3>节点列表</h3>
+          <div class="node-list">
+            <button type="button" class="node-item">故事大纲</button>
+            <button type="button" class="node-item">故事剧本</button>
+            <button type="button" class="node-item">人物描述</button>
+            <button type="button" class="node-item">场景描述</button>
+            <button type="button" class="node-item">角色视图</button>
+            <button type="button" class="node-item">场景视图</button>
+            <button type="button" class="node-item">分镜视频</button>
+            <button type="button" class="node-item">视频合集</button>
+          </div>
+        </div>
+
+        <div class="panel hidden" id="panel-assets">
+          <h3>本地资产</h3>
+          <p>导入本地文件后，可在这里预览并快速加入画布。</p>
+          <div class="asset-actions">
+            <button type="button" id="addAssetsBtn">导入资产</button>
+            <button type="button" id="clearAssetsBtn">清空列表</button>
+          </div>
+          <p class="asset-note">资产仅保存在当前会话中，不会上传网络。</p>
+          <div class="asset-list" id="assetList"></div>
+          <input type="file" id="assetsFileInput" multiple accept="image/*,video/*,audio/*,.txt,.md,.json,.csv,.pdf,.zip" style="display:none" />
+        </div>
+
+        <div class="panel hidden" id="panel-save">
+          <h3>保存工作流</h3>
+          <p>保存当前工作内容到本地，或从本地恢复配置。</p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button type="button" id="exportWorkflow">导出 JSON</button>
+            <button type="button" id="importWorkflow">导入 JSON</button>
+            <button type="button" id="runWorkflow">执行工作流</button>
+          </div>
+          <div id="connectionManager" style="margin-top: 12px;">
+            <h4 style="margin: 10px 0 6px; font-size: 0.88rem;">连线管理</h4>
+            <div id="edgeList" style="display: flex; flex-direction: column; gap: 6px;"></div>
+          </div>
+          <input type="file" id="workflowFile" accept="application/json" style="display:none" />
+        </div>
+      </aside>
+
+      <main class="canvas" aria-label="画布工具">
+        <div class="canvas-header">
+          <h2>画布</h2>
+          <span style="color: rgba(255, 255, 255, 0.55);">(右侧为编辑区域，可拖动/连线)</span>
+        </div>
+        <div class="canvas-area" id="canvasArea">
+          <svg class="connections-layer" id="connectionsLayer" aria-hidden="true"></svg>
+          <div class="connection-buttons-layer" id="connectionButtonsLayer" aria-hidden="true"></div>
+          <div class="nodes-layer" id="nodesLayer"></div>
+          <div class="placeholder" id="canvasPlaceholder">
+            现在可以从左侧“节点列表”点击创建节点。
+            <br />
+            从节点右侧蓝点拖动到另一节点左侧蓝点，可创建连线并建立数据流。
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll('.sidebar .menu button');
+    const panels = document.querySelectorAll('.panel');
+    const canvasArea = document.getElementById('canvasArea');
+    const nodesLayer = document.getElementById('nodesLayer');
+    const connectionsLayer = document.getElementById('connectionsLayer');
+    const placeholder = document.getElementById('canvasPlaceholder');
+    const workflowFile = document.getElementById('workflowFile');
+    const assetsFileInput = document.getElementById('assetsFileInput');
+    const addAssetsBtn = document.getElementById('addAssetsBtn');
+    const clearAssetsBtn = document.getElementById('clearAssetsBtn');
+    const assetList = document.getElementById('assetList');
+
+    const nodeTypes = [
+      '故事大纲',
+      '故事剧本',
+      '人物描述',
+      '场景描述',
+      '角色视图',
+      '场景视图',
+      '分镜视频',
+      '视频合集',
+    ];
+
+    let nodes = [];
+    let edges = [];
+    let assets = [];
+    let nextId = 1;
+    let connectionState = null; // for drag-to-connect
+    let dragState = null;
+
+    function showPanel(name) {
+      panels.forEach(panel => {
+        panel.classList.toggle('hidden', panel.id !== `panel-${name}`);
+      });
+    }
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        const panel = button.dataset.panel;
+        if (panel) showPanel(panel);
+      });
+    });
+
+    document.querySelectorAll('.node-item').forEach(nodeItem => {
+      nodeItem.addEventListener('click', () => {
+        addNode(nodeItem.textContent.trim());
+      });
+    });
+
+    document.getElementById('createProject').addEventListener('click', () => {
+      const name = prompt('请输入项目名称：', '新项目');
+      if (name) {
+        alert(`已创建项目：${name}`);
+      }
+    });
+
+    document.getElementById('exportWorkflow').addEventListener('click', () => {
+      exportWorkflow();
+    });
+
+    document.getElementById('importWorkflow').addEventListener('click', () => {
+      workflowFile.click();
+    });
+
+    workflowFile.addEventListener('change', async event => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const json = JSON.parse(text);
+        loadWorkflow(json);
+      } catch (err) {
+        alert('无法读取工作流文件（JSON 解析失败）。');
+      }
+      workflowFile.value = '';
+    });
+
+    if (addAssetsBtn) {
+      addAssetsBtn.addEventListener('click', () => {
+        assetsFileInput?.click();
+      });
+    }
+
+    if (clearAssetsBtn) {
+      clearAssetsBtn.addEventListener('click', () => {
+        if (!assets.length) {
+          alert('当前没有可清空的资产。');
+          return;
+        }
+        if (confirm('确认清空当前资产列表吗？')) {
+          clearAssets();
+        }
+      });
+    }
+
+    if (assetsFileInput) {
+      assetsFileInput.addEventListener('change', event => {
+        const files = event.target.files;
+        handleAssetFiles(files);
+        assetsFileInput.value = '';
+      });
+    }
+
+    document.getElementById('runWorkflow').addEventListener('click', () => {
+      // 强制检查：若有“故事大纲”和“故事剧本”节点，则必须连线后才能运行。
+      const outlineNodes = nodes.filter(n => n.type === '故事大纲');
+      const scriptNodes = nodes.filter(n => n.type === '故事剧本');
+      if (outlineNodes.length && scriptNodes.length) {
+        const connected = edges.some(e =>
+          outlineNodes.some(o => o.id === e.from) &&
+          scriptNodes.some(s => s.id === e.to)
+        );
+        if (!connected) {
+          alert('请先连线“故事大纲”到“故事剧本”，然后再执行。');
+          return;
+        }
+      }
+
+      const order = computeExecutionOrder();
+      if (!order.length) {
+        alert('当前没有节点可执行。');
+        return;
+      }
+      order.forEach(node => {
+        const upstreamOutputs = edges
+          .filter(e => e.to === node.id)
+          .map(e => nodes.find(n => n.id === e.from)?.output)
+          .filter(Boolean)
+          .join('\n');
+        executeNode(node, upstreamOutputs);
+      });
+
+      saveWorkflowToStorage();
+      alert(`执行完成，节点输出已更新。\n执行顺序：\n${order
+        .map(n => `${n.id} (${n.type})`)
+        .join('\n')}`);
+    });
+
+    document.getElementById('restoreLastWorkflow').addEventListener('click', () => {
+      const restored = loadWorkflowFromStorage();
+      if (!restored) {
+        alert('未找到上次保存的工作流。');
+      } else {
+        showPanel('nodes');
+        alert('已恢复上次流程。');
+      }
+    });
+
+    // 在连线上右键时，高亮并删除该连线（备用）
+    connectionsLayer.addEventListener('contextmenu', event => {
+      const path = event.target.closest('.connection');
+      if (!path) return;
+
+      event.preventDefault();
+      path.classList.add('highlight');
+      setTimeout(() => path.classList.remove('highlight'), 400);
+
+      const from = path.dataset.from;
+      const to = path.dataset.to;
+      if (from && to) {
+        edges = edges.filter(e => !(e.from === from && e.to === to));
+        renderConnections();
+        saveWorkflowToStorage();
+      }
+    });
+
+    // 点击连线删除（首选）
+    connectionsLayer.addEventListener('click', event => {
+      const path = event.target.closest('.connection');
+      if (!path) return;
+
+      event.stopPropagation();
+      const from = path.dataset.from;
+      const to = path.dataset.to;
+      if (from && to) {
+        edges = edges.filter(e => !(e.from === from && e.to === to));
+        renderConnections();
+        saveWorkflowToStorage();
+      }
+    });
+
+    function formatFileSize(bytes) {
+      if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
+      const units = ['B', 'KB', 'MB', 'GB'];
+      const unitIndex = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+      const value = bytes / Math.pow(1024, unitIndex);
+      const decimals = unitIndex >= 2 ? 2 : 1;
+      return `${value.toFixed(decimals)} ${units[unitIndex]}`;
+    }
+
+    function detectAssetKind(file) {
+      if (file.type.startsWith('image/')) return 'image';
+      if (file.type.startsWith('video/')) return 'video';
+      if (file.type.startsWith('audio/')) return 'audio';
+      return 'file';
+    }
+
+    function createAssetRecord(file) {
+      return {
+        id: `asset_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        name: file.name,
+        size: file.size,
+        mime: file.type || 'unknown',
+        kind: detectAssetKind(file),
+        lastModified: file.lastModified,
+        objectUrl: URL.createObjectURL(file),
+      };
+    }
+
+    function revokeAssetUrls() {
+      assets.forEach(asset => {
+        if (asset.objectUrl) {
+          URL.revokeObjectURL(asset.objectUrl);
+        }
+      });
+    }
+
+    function clearAssets() {
+      revokeAssetUrls();
+      assets = [];
+      renderAssets();
+    }
+
+    function removeAsset(assetId) {
+      const target = assets.find(asset => asset.id === assetId);
+      if (target?.objectUrl) {
+        URL.revokeObjectURL(target.objectUrl);
+      }
+      assets = assets.filter(asset => asset.id !== assetId);
+      renderAssets();
+    }
+
+    function addAssetNode(asset) {
+      const rect = getCanvasRect();
+      const stagger = nodes.length % 6;
+      const node = {
+        id: `node_${nextId++}`,
+        type: '本地资产',
+        x: Math.max(16, rect.width / 2 - 120 + stagger * 14),
+        y: Math.max(16, rect.height / 2 - 60 + stagger * 10),
+        params: {
+          input: JSON.stringify(
+            {
+              assetId: asset.id,
+              name: asset.name,
+              size: asset.size,
+              mime: asset.mime,
+            },
+            null,
+            2
+          ),
+        },
+        output: '',
+      };
+
+      nodes.push(node);
+      renderNodes();
+      renderConnections();
+      updatePlaceholderVisibility();
+      saveWorkflowToStorage();
+      showPanel('nodes');
+    }
+
+    function renderAssets() {
+      if (!assetList) return;
+      assetList.innerHTML = '';
+
+      if (!assets.length) {
+        const empty = document.createElement('div');
+        empty.className = 'asset-empty';
+        empty.textContent = '还没有资产，点击“导入资产”开始添加。';
+        assetList.appendChild(empty);
+        return;
+      }
+
+      assets.forEach(asset => {
+        const item = document.createElement('div');
+        item.className = 'asset-item';
+
+        if (asset.kind === 'image' && asset.objectUrl) {
+          const preview = document.createElement('img');
+          preview.className = 'asset-preview';
+          preview.alt = asset.name;
+          preview.src = asset.objectUrl;
+          item.appendChild(preview);
+        } else if (asset.kind === 'video' && asset.objectUrl) {
+          const preview = document.createElement('video');
+          preview.className = 'asset-preview';
+          preview.src = asset.objectUrl;
+          preview.controls = true;
+          preview.preload = 'metadata';
+          item.appendChild(preview);
+        } else {
+          const icon = document.createElement('div');
+          icon.className = 'asset-file-icon';
+          icon.textContent = asset.kind.toUpperCase();
+          item.appendChild(icon);
+        }
+
+        const name = document.createElement('div');
+        name.className = 'asset-name';
+        name.textContent = asset.name;
+        item.appendChild(name);
+
+        const info = document.createElement('div');
+        info.className = 'asset-info';
+        info.textContent = `${asset.mime} · ${formatFileSize(asset.size)}`;
+        item.appendChild(info);
+
+        const actions = document.createElement('div');
+        actions.className = 'asset-item-actions';
+
+        const previewBtn = document.createElement('button');
+        previewBtn.type = 'button';
+        previewBtn.textContent = '预览';
+        previewBtn.addEventListener('click', () => {
+          if (!asset.objectUrl) return;
+          window.open(asset.objectUrl, '_blank');
+        });
+
+        const nodeBtn = document.createElement('button');
+        nodeBtn.type = 'button';
+        nodeBtn.textContent = '加入画布';
+        nodeBtn.addEventListener('click', () => {
+          addAssetNode(asset);
+        });
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.textContent = '移除';
+        removeBtn.addEventListener('click', () => {
+          removeAsset(asset.id);
+        });
+
+        actions.appendChild(previewBtn);
+        actions.appendChild(nodeBtn);
+        actions.appendChild(removeBtn);
+        item.appendChild(actions);
+        assetList.appendChild(item);
+      });
+    }
+
+    function handleAssetFiles(fileList) {
+      if (!fileList || !fileList.length) return;
+
+      const files = Array.from(fileList);
+      const existingSignatures = new Set(
+        assets.map(asset => `${asset.name}|${asset.size}|${asset.lastModified}`)
+      );
+
+      let addedCount = 0;
+      files.forEach(file => {
+        const signature = `${file.name}|${file.size}|${file.lastModified}`;
+        if (existingSignatures.has(signature)) {
+          return;
+        }
+        existingSignatures.add(signature);
+        assets.push(createAssetRecord(file));
+        addedCount += 1;
+      });
+
+      renderAssets();
+      if (!addedCount) {
+        alert('未新增资产：已自动跳过重复文件。');
+      }
+    }
+
+    function exportWorkflow() {
+      try {
+        const now = new Date();
+        const payload = {
+          version: 1,
+          exportedAt: now.toISOString(),
+          nodes,
+          edges,
+          assets: assets.map(({ id, name, size, mime, kind, lastModified }) => ({
+            id,
+            name,
+            size,
+            mime,
+            kind,
+            lastModified,
+          })),
+        };
+        const json = JSON.stringify(payload, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `workflow-${stamp}.json`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        console.warn('导出工作流失败', e);
+        alert('导出失败，请稍后重试。');
+      }
+    }
+    function saveWorkflowToStorage() {
+      try {
+        const payload = JSON.stringify({ nodes, edges });
+        localStorage.setItem('aiyou_workflow', payload);
+      } catch (e) {
+        console.warn('保存工作流失败', e);
+      }
+    }
+
+    const modelTypes = [
+      { key: 'text', label: '文本模型', default: 'gpt-4' },
+      { key: 'image', label: '生图模型', default: 'sd-1.5' },
+      { key: 'video', label: '视频模型', default: 'video-gen-v1' },
+    ];
+
+    const availableModels = [
+      { id: 'gpt-4', name: 'GPT-4', category: 'text' },
+      { id: 'gpt-4o', name: 'GPT-4o', category: 'text' },
+      { id: 'gpt-3.5-turbo', name: 'GPT-3.5-turbo', category: 'text' },
+      { id: 'gpt-3.5-turbo-16k', name: 'GPT-3.5-turbo-16k', category: 'text' },
+      { id: 'sd-1.5', name: 'Stable Diffusion 1.5', category: 'image' },
+      { id: 'sd-2.1', name: 'Stable Diffusion 2.1', category: 'image' },
+      { id: 'video-gen-v1', name: 'VideoGen V1', category: 'video' },
+      { id: 'video-gen-v2', name: 'VideoGen V2', category: 'video' },
+    ];
+
+    function modelKey(category) {
+      return `aiyou_model_${category}`;
+    }
+
+    function loadModelSelection(category) {
+      try {
+        const stored = localStorage.getItem(modelKey(category));
+        if (stored) return stored;
+        const type = modelTypes.find(t => t.key === category);
+        return type ? type.default : '';
+      } catch (e) {
+        console.warn('加载模型设置失败', e);
+        const type = modelTypes.find(t => t.key === category);
+        return type ? type.default : '';
+      }
+    }
+
+    function saveModelSelection(category, modelId) {
+      try {
+        localStorage.setItem(modelKey(category), modelId);
+      } catch (e) {
+        console.warn('保存模型设置失败', e);
+      }
+    }
+
+    function renderModelModal() {
+      const list = document.getElementById('modelList');
+      if (!list) return;
+
+      list.innerHTML = '';
+
+      availableModels.forEach(model => {
+        const card = document.createElement('div');
+        card.className = 'model-card';
+
+        const title = document.createElement('h4');
+        title.textContent = model.name;
+        card.appendChild(title);
+
+        modelTypes.forEach(type => {
+          if (type.key !== model.category) return;
+          const btn = document.createElement('button');
+          btn.textContent = `设为 ${type.label}`;
+          const current = loadModelSelection(type.key);
+          if (current === model.id) {
+            btn.classList.add('selected');
+            btn.textContent = `当前 ${type.label}`;
+          }
+          btn.addEventListener('click', () => {
+            saveModelSelection(type.key, model.id);
+            renderModelModal();
+          });
+          card.appendChild(btn);
+        });
+
+        list.appendChild(card);
+      });
+
+      modelTypes.forEach(type => {
+        const current = loadModelSelection(type.key);
+        const display = document.getElementById(`current${type.key.charAt(0).toUpperCase() + type.key.slice(1)}Model`);
+        if (display) {
+          const model = availableModels.find(m => m.id === current);
+          display.textContent = model ? model.name : current;
+        }
+      });
+    }
+
+    function openModelSettings() {
+      const modal = document.getElementById('modelModal');
+      if (!modal) return;
+      modal.classList.add('open');
+      renderModelModal();
+    }
+
+    function closeModelSettings() {
+      const modal = document.getElementById('modelModal');
+      if (!modal) return;
+      modal.classList.remove('open');
+    }
+
+    function initModelSettingsPage() {
+      const openBtn = document.getElementById('openModelSettings');
+      const closeBtn = document.getElementById('closeModelModal');
+      const backdrop = document.getElementById('modelModalBackdrop');
+      if (openBtn) openBtn.addEventListener('click', openModelSettings);
+      if (closeBtn) closeBtn.addEventListener('click', closeModelSettings);
+      if (backdrop) backdrop.addEventListener('click', closeModelSettings);
+      renderModelModal();
+    }
+
+    function loadWorkflowFromStorage() {
+      try {
+        const raw = localStorage.getItem('aiyou_workflow');
+        if (!raw) return false;
+        const data = JSON.parse(raw);
+        loadWorkflow(data);
+        return true;
+      } catch (e) {
+        console.warn('加载本地工作流失败', e);
+        return false;
+      }
+    }
+
+    function executeNode(node, input) {
+      const prefix = `【${node.type}】`;
+      const paramText = (node.params && node.params.input) || '';
+      const inputText = input ? `\n\n输入上游数据：\n${input}` : '';
+      const result = `${prefix}\n参数：${paramText || '<无>'}${inputText}\n结果：${generateMockResult(node.type, paramText, input)}`;
+      node.output = result;
+      updateNodeOutput(node);
+      saveWorkflowToStorage();
+    }
+
+    function generateMockResult(type, paramsText, inputs) {
+      if (type === '故事大纲') {
+        const matchEpisodes = paramsText.match(/(\d+)\s*集/);
+        const matchMinutes = paramsText.match(/(\d+)\s*分钟/);
+        const episodes = matchEpisodes ? matchEpisodes[1] : null;
+        const minutes = matchMinutes ? matchMinutes[1] : null;
+        let extra = '';
+        if (episodes || minutes) {
+          extra = `\n【规划】${episodes ?? '??'}集，${minutes ?? '??'}分钟/集`;
+        }
+        return `生成了故事大纲（基于：${paramsText || '无'}）${extra}`;
+      }
+      if (type === '故事剧本') {
+        const outlineMatch = inputs ? inputs.match(/生成了故事大纲[\s\S]*?(?=\n【规划】|$)/) : null;
+        const planningMatch = inputs ? inputs.match(/【规划】(\d+|\?\?)集，(\d+|\?\?)分钟\/集/) : null;
+        const outlineText = outlineMatch ? outlineMatch[0].trim() : '';
+        const planningText = planningMatch ? planningMatch[0] : '';
+        const planningInfo = planningText ? `\n${planningText}` : '';
+        return `生成了剧本（${inputs ? '基于大纲生成' : '独立生成'}）${planningInfo}${outlineText ? `\n——大纲摘录：${outlineText}` : ''}`;
+      }
+      if (type === '人物描述') {
+        return `生成了人物描述（${paramsText || '无'}）`;
+      }
+      if (type === '场景描述') {
+        return `生成了场景描述（${paramsText || '无'}）`;
+      }
+      if (type === '角色视图') {
+        return `生成了角色视图（${paramsText || '无'}）`;
+      }
+      if (type === '场景视图') {
+        return `生成了场景视图（${paramsText || '无'}）`;
+      }
+      if (type === '分镜视频') {
+        return `生成了分镜视频（${inputs ? '使用连线数据' : '独立'}）`;
+      }
+      if (type === '视频合集') {
+        return `生成了视频合集（${inputs ? '合并上游视频' : '独立生成'}）`;
+      }
+      return '已执行（示例结果）';
+    }
+
+    function updateNodeOutput(node) {
+      const el = nodesLayer.querySelector(`.node[data-id="${node.id}"]`);
+      if (!el) return;
+      const outputEl = el.querySelector('.node-output');
+      if (!outputEl) return;
+      outputEl.textContent = node.output || '';
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    function updatePlaceholderVisibility() {
+      placeholder.style.display = nodes.length ? 'none' : 'flex';
+    }
+
+    function sanitizeTextInput(text) {
+      // 仅保留普通可见字符，去掉 HTML 标签与控制字符。
+      return text
+        .replace(/<[^>]*>/g, '')
+        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+    }
+
+    function removeNode(nodeId) {
+      nodes = nodes.filter(n => n.id !== nodeId);
+      edges = edges.filter(e => e.from !== nodeId && e.to !== nodeId);
+      renderNodes();
+      renderConnections();
+      updatePlaceholderVisibility();
+      saveWorkflowToStorage();
+    }
+
+    function getCanvasRect() {
+      return canvasArea.getBoundingClientRect();
+    }
+
+    function createNodeElement(node) {
+      const el = document.createElement('div');
+      el.className = 'node';
+      el.dataset.id = node.id;
+      el.style.left = `${node.x}px`;
+      el.style.top = `${node.y}px`;
+
+      const header = document.createElement('div');
+      header.className = 'node-header';
+      const title = document.createElement('div');
+      title.className = 'node-title';
+      title.textContent = `${node.type}`;
+
+      const controls = document.createElement('div');
+      controls.style.display = 'flex';
+      controls.style.alignItems = 'center';
+      controls.style.gap = '6px';
+
+      const runButton = document.createElement('button');
+      runButton.type = 'button';
+      runButton.className = 'node-run';
+      runButton.textContent = '运行';
+      runButton.addEventListener('click', event => {
+        event.stopPropagation();
+        const upstreamOutputs = edges
+          .filter(e => e.to === node.id)
+          .map(e => nodes.find(n => n.id === e.from)?.output)
+          .filter(Boolean)
+          .join('\n');
+        executeNode(node, upstreamOutputs);
+      });
+
+      const deleteButton = document.createElement('button');
+      deleteButton.type = 'button';
+      deleteButton.className = 'node-delete';
+      deleteButton.textContent = '删除';
+      deleteButton.title = '删除该节点';
+      deleteButton.addEventListener('click', event => {
+        event.stopPropagation();
+        if (confirm('确认删除该节点及其所有连线？')) {
+          removeNode(node.id);
+        }
+      });
+
+      const inHandle = document.createElement('div');
+      inHandle.className = 'handle in';
+      inHandle.title = '连接到该节点';
+
+      const outHandle = document.createElement('div');
+      outHandle.className = 'handle out';
+      outHandle.title = '从该节点连接';
+
+      outHandle.addEventListener('pointerdown', event => {
+        // 仅允许左键开始连线（避免右键也触发连线逻辑）
+        if (event.button !== 0) return;
+        event.stopPropagation();
+        if (connectionState) {
+          connectionState.path.remove();
+          connectionState = null;
+        }
+
+        const rect = outHandle.getBoundingClientRect();
+        const canvasRect = getCanvasRect();
+        const startX = rect.left + rect.width / 2 - canvasRect.left;
+        const startY = rect.top + rect.height / 2 - canvasRect.top;
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.classList.add('connection');
+        // Use the originating node ID so right-click can delete this connection.
+        path.dataset.from = node.id;
+        connectionsLayer.appendChild(path);
+
+        connectionState = {
+          from: node.id,
+          startX,
+          startY,
+          path,
+        };
+
+        window.addEventListener('pointermove', updateConnectionPath);
+        window.addEventListener('pointerup', finishConnection);
+      });
+
+      controls.appendChild(runButton);
+      controls.appendChild(deleteButton);
+      controls.appendChild(inHandle);
+      controls.appendChild(outHandle);
+      header.appendChild(title);
+      header.appendChild(controls);
+      el.appendChild(header);
+
+      const body = document.createElement('div');
+      body.className = 'node-body';
+
+      const inputLabel = document.createElement('div');
+      inputLabel.textContent = '输入参数（JSON / 文本）：';
+      body.appendChild(inputLabel);
+
+      const inputArea = document.createElement('textarea');
+      inputArea.value = (node.params && node.params.input) || '';
+      inputArea.addEventListener('input', () => {
+        const sanitized = sanitizeTextInput(inputArea.value);
+        if (sanitized !== inputArea.value) {
+          // 仅保留纯文本，避免粘贴 html 或控制字符
+          inputArea.value = sanitized;
+        }
+        node.params = node.params || { input: '' };
+        node.params.input = inputArea.value;
+        saveWorkflowToStorage();
+      });
+      body.appendChild(inputArea);
+
+      const outputLabel = document.createElement('div');
+      outputLabel.textContent = '输出结果：';
+      body.appendChild(outputLabel);
+
+      const outputArea = document.createElement('div');
+      outputArea.className = 'node-output';
+      outputArea.textContent = node.output || '（暂无输出）';
+      body.appendChild(outputArea);
+
+      el.appendChild(body);
+
+      // Dragging (single shared drag state)
+      header.addEventListener('pointerdown', event => {
+        // 如果点击的是按钮（运行/删除），则不触发拖拽行为
+        if (event.target.closest('button')) return;
+        event.preventDefault();
+        el.setPointerCapture(event.pointerId);
+        const rect = el.getBoundingClientRect();
+        const parentRect = getCanvasRect();
+        dragState = {
+          pointerId: event.pointerId,
+          nodeId: node.id,
+          startX: event.clientX,
+          startY: event.clientY,
+          offsetX: rect.left - parentRect.left,
+          offsetY: rect.top - parentRect.top,
+          parentRect,
+          element: el,
+        };
+      });
+
+      return el;
+    }
+
+    function addNode(type) {
+      const rect = getCanvasRect();
+      const x = Math.max(16, rect.width / 2 - 120);
+      const y = Math.max(16, rect.height / 2 - 60);
+      const node = {
+        id: `node_${nextId++}`,
+        type,
+        x,
+        y,
+        params: {
+          input: '',
+        },
+        output: '',
+      };
+      nodes.push(node);
+      renderNodes();
+      renderConnections();
+      updatePlaceholderVisibility();
+      saveWorkflowToStorage();
+    }
+
+    function addEdge(from, to) {
+      if (edges.some(e => e.from === from && e.to === to)) return;
+      edges.push({ from, to });
+      renderConnections();
+      saveWorkflowToStorage();
+    }
+
+    function clearCanvas() {
+      nodes = [];
+      edges = [];
+      nextId = 1;
+      connectionState = null;
+      renderNodes();
+      renderConnections();
+      updatePlaceholderVisibility();
+      saveWorkflowToStorage();
+    }
+
+    function renderNodes() {
+      nodesLayer.innerHTML = '';
+      nodes.forEach(node => {
+        const el = createNodeElement(node);
+        nodesLayer.appendChild(el);
+      });
+    }
+
+    function renderConnections() {
+      connectionsLayer.innerHTML = '';
+      const buttonLayer = document.getElementById('connectionButtonsLayer');
+      if (buttonLayer) buttonLayer.innerHTML = '';
+
+      edges.forEach(edge => {
+        const fromEl = nodesLayer.querySelector(`.node[data-id="${edge.from}"]`);
+        const toEl = nodesLayer.querySelector(`.node[data-id="${edge.to}"]`);
+        if (!fromEl || !toEl) return;
+
+        const fromHandle = fromEl.querySelector('.handle.out');
+        const toHandle = toEl.querySelector('.handle.in');
+        if (!fromHandle || !toHandle) return;
+
+        const fromRect = fromHandle.getBoundingClientRect();
+        const toRect = toHandle.getBoundingClientRect();
+        const canvasRect = getCanvasRect();
+
+        const startX = fromRect.left + fromRect.width / 2 - canvasRect.left;
+        const startY = fromRect.top + fromRect.height / 2 - canvasRect.top;
+        const endX = toRect.left + toRect.width / 2 - canvasRect.left;
+        const endY = toRect.top + toRect.height / 2 - canvasRect.top;
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', `M ${startX} ${startY} C ${startX + 80} ${startY} ${endX - 80} ${endY} ${endX} ${endY}`);
+        path.classList.add('connection');
+        path.dataset.from = edge.from;
+        path.dataset.to = edge.to;
+        connectionsLayer.appendChild(path);
+
+        // 在画布上放一个绝对定位的删除按钮（确保总是在最上层）
+        if (buttonLayer) {
+          const midX = (startX + endX) / 2;
+          const midY = (startY + endY) / 2;
+          const btn = document.createElement('button');
+          btn.className = 'connection-delete-btn';
+          btn.style.position = 'absolute';
+          btn.style.left = `${midX - 11}px`;
+          btn.style.top = `${midY - 11}px`;
+          btn.textContent = '删';
+          btn.addEventListener('click', event => {
+            event.stopPropagation();
+            removeEdge(edge.from, edge.to);
+          });
+          buttonLayer.appendChild(btn);
+        }
+      });
+
+      renderEdgeList();
+    }
+
+    function removeEdge(from, to) {
+      edges = edges.filter(e => !(e.from === from && e.to === to));
+      renderConnections();
+      saveWorkflowToStorage();
+    }
+
+    function renderEdgeList() {
+      const edgeList = document.getElementById('edgeList');
+      if (!edgeList) return;
+
+      edgeList.innerHTML = '';
+      if (!edges.length) {
+        edgeList.textContent = '当前没有连线。';
+        return;
+      }
+
+      edges.forEach(edge => {
+        const fromNode = nodes.find(n => n.id === edge.from);
+        const toNode = nodes.find(n => n.id === edge.to);
+        const item = document.createElement('div');
+        item.style.display = 'flex';
+        item.style.alignItems = 'center';
+        item.style.justifyContent = 'space-between';
+        item.style.padding = '4px 6px';
+        item.style.border = '1px solid rgba(255,255,255,0.12)';
+        item.style.borderRadius = '6px';
+
+        const label = document.createElement('span');
+        label.textContent = `${fromNode?.type || edge.from} → ${toNode?.type || edge.to}`;
+        label.style.fontSize = '0.85rem';
+
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.textContent = '删除';
+        del.style.fontSize = '0.75rem';
+        del.style.padding = '2px 6px';
+        del.style.borderRadius = '6px';
+        del.style.border = '1px solid rgba(255,255,255,0.18)';
+        del.style.background = 'rgba(255, 80, 80, 0.18)';
+        del.style.color = 'rgba(255,255,255,0.9)';
+        del.style.cursor = 'pointer';
+
+        del.addEventListener('click', () => {
+          removeEdge(edge.from, edge.to);
+        });
+
+        item.appendChild(label);
+        item.appendChild(del);
+        edgeList.appendChild(item);
+      });
+    }
+
+    function loadWorkflow(data) {
+      if (!data || !Array.isArray(data.nodes)) {
+        alert('无效的工作流结构。');
+        return;
+      }
+
+      nodes = data.nodes.map(n => ({
+        id: n.id,
+        type: n.type,
+        x: n.x,
+        y: n.y,
+        params: n.params ? { ...n.params } : { input: '' },
+        output: n.output || '',
+      }));
+      edges = Array.isArray(data.edges) ? data.edges.map(e => ({ ...e })) : [];
+      nextId = nodes.reduce((max, n) => {
+        const num = parseInt(n.id.replace(/\D/g, ''), 10);
+        return Number.isNaN(num) ? max : Math.max(max, num);
+      }, 0) + 1;
+      renderNodes();
+      renderConnections();
+      updatePlaceholderVisibility();
+      saveWorkflowToStorage();
+    }
+
+    function computeExecutionOrder() {
+      // 简单拓扑排序，忽略循环
+      const inDegree = {};
+      const graph = {};
+
+      nodes.forEach(n => {
+        inDegree[n.id] = 0;
+        graph[n.id] = [];
+      });
+
+      edges.forEach(edge => {
+        if (!graph[edge.from] || !graph[edge.to]) return;
+        graph[edge.from].push(edge.to);
+        inDegree[edge.to] = (inDegree[edge.to] || 0) + 1;
+      });
+
+      const queue = nodes.filter(n => inDegree[n.id] === 0).map(n => n.id);
+      const result = [];
+
+      while (queue.length) {
+        const id = queue.shift();
+        const node = nodes.find(n => n.id === id);
+        if (node) result.push(node);
+        (graph[id] || []).forEach(nextId => {
+          inDegree[nextId]--;
+          if (inDegree[nextId] === 0) queue.push(nextId);
+        });
+      }
+
+      if (result.length !== nodes.length) {
+        // 存在循环，返回原始顺序
+        return nodes;
+      }
+      return result;
+    }
+
+    // 全局拖拽事件（单次注册）
+    function updateConnectionPath(event) {
+      if (!connectionState) return;
+      const canvasRect = getCanvasRect();
+      const endX = event.clientX - canvasRect.left;
+      const endY = event.clientY - canvasRect.top;
+      connectionState.path.setAttribute(
+        'd',
+        `M ${connectionState.startX} ${connectionState.startY} C ${connectionState.startX + 80} ${connectionState.startY} ${endX - 80} ${endY} ${endX} ${endY}`
+      );
+    }
+
+    function finishConnection(event) {
+      if (!connectionState) return;
+      const target = document.elementFromPoint(event.clientX, event.clientY);
+      const inHandle = target?.closest?.(".handle.in");
+      if (inHandle) {
+        const nodeEl = inHandle.closest('.node');
+        if (nodeEl) {
+          const toId = nodeEl.dataset.id;
+          if (toId && toId !== connectionState.from) {
+            addEdge(connectionState.from, toId);
+          }
+        }
+      }
+      // cleanup
+      connectionState.path.remove();
+      connectionState = null;
+      window.removeEventListener('pointermove', updateConnectionPath);
+      window.removeEventListener('pointerup', finishConnection);
+    }
+
+    window.addEventListener('pointermove', event => {
+      if (!dragState || event.pointerId !== dragState.pointerId) return;
+      const deltaX = event.clientX - dragState.startX;
+      const deltaY = event.clientY - dragState.startY;
+
+      const desiredLeft = dragState.offsetX + deltaX;
+      const desiredTop = dragState.offsetY + deltaY;
+
+      const maxLeft = dragState.parentRect.width - dragState.element.offsetWidth - 16;
+      const maxTop = dragState.parentRect.height - dragState.element.offsetHeight - 16;
+
+      const left = clamp(desiredLeft, 16, maxLeft);
+      const top = clamp(desiredTop, 16, maxTop);
+
+      dragState.element.style.left = `${left}px`;
+      dragState.element.style.top = `${top}px`;
+
+      const nodeObj = nodes.find(n => n.id === dragState.nodeId);
+      if (nodeObj) {
+        nodeObj.x = left;
+        nodeObj.y = top;
+      }
+
+      renderConnections();
+    });
+
+    window.addEventListener('pointerup', event => {
+      if (!dragState || event.pointerId !== dragState.pointerId) return;
+      dragState.element.releasePointerCapture(event.pointerId);
+      dragState = null;
+      saveWorkflowToStorage();
+    });
+
+    window.addEventListener('beforeunload', () => {
+      revokeAssetUrls();
+    });
+
+    // 初次打开页面时不自动加载上次工作流，需通过左侧“恢复上次流程”按钮来恢复
+    initModelSettingsPage();
+    showPanel('nodes');
+    updatePlaceholderVisibility();
+    renderAssets();
+  </script>
+
+  <div class="model-modal" id="modelModal" aria-hidden="true">
+    <div class="model-modal-backdrop" id="modelModalBackdrop"></div>
+    <div class="model-modal-content">
+      <div class="model-modal-header">
+        <h3>模型设置</h3>
+        <button class="model-modal-close" id="closeModelModal">关闭</button>
+      </div>
+      <div class="model-list" id="modelList"></div>
+      <div class="model-current">
+        <div>文本模型：<span id="currentTextModel"></span></div>
+        <div>生图模型：<span id="currentImageModel"></span></div>
+        <div>视频模型：<span id="currentVideoModel"></span></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

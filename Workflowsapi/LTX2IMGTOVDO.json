@@ -1,0 +1,408 @@
+﻿{
+  "153": {
+    "inputs": {
+      "cfg": 1,
+      "model": [
+        "279",
+        0
+      ],
+      "positive": [
+        "164",
+        0
+      ],
+      "negative": [
+        "164",
+        1
+      ]
+    },
+    "class_type": "CFGGuider",
+    "_meta": {
+      "title": "CFG引导器"
+    }
+  },
+  "154": {
+    "inputs": {
+      "sampler_name": "lcm"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "K采样器选择"
+    }
+  },
+  "161": {
+    "inputs": {
+      "noise": [
+        "178",
+        0
+      ],
+      "guider": [
+        "153",
+        0
+      ],
+      "sampler": [
+        "154",
+        0
+      ],
+      "sigmas": [
+        "238",
+        0
+      ],
+      "latent_image": [
+        "166",
+        0
+      ]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "自定义采样器（高级）"
+    }
+  },
+  "162": {
+    "inputs": {
+      "width": [
+        "241",
+        1
+      ],
+      "height": [
+        "241",
+        2
+      ],
+      "length": [
+        "292",
+        0
+      ],
+      "batch_size": 1
+    },
+    "class_type": "EmptyLTXVLatentVideo",
+    "_meta": {
+      "title": "空Latent视频（LTXV）"
+    }
+  },
+  "164": {
+    "inputs": {
+      "frame_rate": 25,
+      "positive": [
+        "169",
+        0
+      ],
+      "negative": [
+        "165",
+        0
+      ]
+    },
+    "class_type": "LTXVConditioning",
+    "_meta": {
+      "title": "LTXV条件"
+    }
+  },
+  "165": {
+    "inputs": {
+      "text": "subtitles, captions, visible text, english text, pseudo text, watermark, logo, deformed face, bad anatomy, extra limbs, duplicate character, blurry, low quality, flickering, camera shake, bad composition, identity drift",
+      "clip": [
+        "276",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP文本编码"
+    }
+  },
+  "166": {
+    "inputs": {
+      "video_latent": [
+        "239",
+        0
+      ],
+      "audio_latent": [
+        "284",
+        0
+      ]
+    },
+    "class_type": "LTXVConcatAVLatent",
+    "_meta": {
+      "title": "LTXVConcatAVLatent"
+    }
+  },
+  "169": {
+    "inputs": {
+      "text": "A terrifying anime horror scene in a narrow old apartment hallway at night, close shot, dutch angle, forward follow shot. Chen Fan suddenly turns back in fear, eyes wide, shocked expression, as a thin semi-transparent ghost hand reaches out from a dark shadow behind him and grabs toward his neck. Blurred corridor lights in the background, eerie ghostly mist, shadowy spirit figure, oppressive haunted building atmosphere, cinematic horror lighting, dynamic supernatural motion, detailed anime style, stable character identity, smooth animation, high quality. Chinese male voice, frightened breathing, short Mandarin gasp, terrified Chinese whisper: “别过来……” ghostly wailing, eerie supernatural ambience, corridor reverb, no music",
+      "clip": [
+        "276",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP文本编码"
+    }
+  },
+  "178": {
+    "inputs": {
+      "noise_seed": 3
+    },
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "随机噪波"
+    }
+  },
+  "190": {
+    "inputs": {
+      "frame_rate": 25,
+      "loop_count": 0,
+      "filename_prefix": "LTX-2",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 16,
+      "save_metadata": true,
+      "trim_to_audio": false,
+      "pingpong": false,
+      "save_output": true,
+      "images": [
+        "302",
+        0
+      ],
+      "audio": [
+        "299",
+        0
+      ]
+    },
+    "class_type": "VHS_VideoCombine",
+    "_meta": {
+      "title": "Video Combine 🎥🅥🅗🅢"
+    }
+  },
+  "238": {
+    "inputs": {
+      "scheduler": "simple",
+      "steps": 8,
+      "denoise": 1,
+      "model": [
+        "279",
+        0
+      ]
+    },
+    "class_type": "BasicScheduler",
+    "_meta": {
+      "title": "基本调度器"
+    }
+  },
+  "239": {
+    "inputs": {
+      "strength": 1,
+      "bypass": [
+        "391",
+        0
+      ],
+      "vae": [
+        "277",
+        0
+      ],
+      "image": [
+        "269",
+        0
+      ],
+      "latent": [
+        "162",
+        0
+      ]
+    },
+    "class_type": "LTXVImgToVideoInplace",
+    "_meta": {
+      "title": "LTXV图像转视频（原地）"
+    }
+  },
+  "240": {
+    "inputs": {
+      "image": "002.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "加载图像"
+    }
+  },
+  "241": {
+    "inputs": {
+      "width": [
+        "290",
+        0
+      ],
+      "height": [
+        "291",
+        0
+      ],
+      "upscale_method": "lanczos",
+      "keep_proportion": "crop",
+      "pad_color": "0, 0, 0",
+      "crop_position": "center",
+      "divisible_by": 2,
+      "device": "cpu",
+      "image": [
+        "240",
+        0
+      ]
+    },
+    "class_type": "ImageResizeKJv2",
+    "_meta": {
+      "title": "Resize Image v2"
+    }
+  },
+  "245": {
+    "inputs": {
+      "av_latent": [
+        "161",
+        0
+      ]
+    },
+    "class_type": "LTXVSeparateAVLatent",
+    "_meta": {
+      "title": "LTXV分离音视频潜空间"
+    }
+  },
+  "269": {
+    "inputs": {
+      "img_compression": 18,
+      "image": [
+        "241",
+        0
+      ]
+    },
+    "class_type": "LTXVPreprocess",
+    "_meta": {
+      "title": "LTXV预处理"
+    }
+  },
+  "276": {
+    "inputs": {
+      "clip_name1": "gemma_3_12B_it.safetensors",
+      "clip_name2": "ltx-2-19b-dev_embeddings_connectors.safetensors",
+      "type": "ltxv",
+      "device": "default"
+    },
+    "class_type": "DualCLIPLoader",
+    "_meta": {
+      "title": "CLIP  ( Geamm + LTX Embedding"
+    }
+  },
+  "277": {
+    "inputs": {
+      "vae_name": "ltx-2-19b-dev_video_vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE  (video vae)"
+    }
+  },
+  "278": {
+    "inputs": {
+      "vae_name": "ltx-2-19b-dev_audio_vae.safetensors",
+      "device": "main_device",
+      "weight_dtype": "bf16"
+    },
+    "class_type": "VAELoaderKJ",
+    "_meta": {
+      "title": "VAELoader KJ (audio vae)"
+    }
+  },
+  "279": {
+    "inputs": {
+      "unet_name": "ltx-2-19b-dev.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "UNet加载器"
+    }
+  },
+  "284": {
+    "inputs": {
+      "frames_number": [
+        "292",
+        0
+      ],
+      "frame_rate": 25,
+      "batch_size": 1,
+      "audio_vae": [
+        "278",
+        0
+      ]
+    },
+    "class_type": "LTXVEmptyLatentAudio",
+    "_meta": {
+      "title": "LTXV 空音频潜空间"
+    }
+  },
+  "290": {
+    "inputs": {
+      "value": 1280
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "WIDTH"
+    }
+  },
+  "291": {
+    "inputs": {
+      "value": 720
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "HEIGHT"
+    }
+  },
+  "292": {
+    "inputs": {
+      "value": 75
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "LENGTH (frames)"
+    }
+  },
+  "299": {
+    "inputs": {
+      "samples": [
+        "245",
+        1
+      ],
+      "audio_vae": [
+        "278",
+        0
+      ]
+    },
+    "class_type": "LTXVAudioVAEDecode",
+    "_meta": {
+      "title": "LTXV音频VAE解码"
+    }
+  },
+  "302": {
+    "inputs": {
+      "tile_size": 512,
+      "overlap": 64,
+      "temporal_size": 4096,
+      "temporal_overlap": 8,
+      "samples": [
+        "245",
+        0
+      ],
+      "vae": [
+        "277",
+        0
+      ]
+    },
+    "class_type": "VAEDecodeTiled",
+    "_meta": {
+      "title": "VAE解码（分块）"
+    }
+  },
+  "391": {
+    "inputs": {
+      "value": false
+    },
+    "class_type": "PrimitiveBoolean",
+    "_meta": {
+      "title": "Set true to use text prompt only"
+    }
+  }
+}
+

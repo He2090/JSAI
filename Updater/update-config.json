@@ -1,0 +1,5 @@
+{
+  "manifestUrl": "http://127.0.0.1:5157/api/update/manifest/stable",
+  "channel": "stable",
+  "requestTimeoutSeconds": 8
+}

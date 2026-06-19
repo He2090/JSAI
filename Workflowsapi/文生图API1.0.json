@@ -1,0 +1,107 @@
+{
+  "3": {
+    "inputs": {
+      "seed": 505394013836672,
+      "steps": 35,
+      "cfg": 7,
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "denoise": 1,
+      "model": [
+        "4",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "latent_image": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "K采样器"
+    }
+  },
+  "4": {
+    "inputs": {
+      "ckpt_name": "dreamshaper_8.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Checkpoint加载器（简易）"
+    }
+  },
+  "5": {
+    "inputs": {
+      "width": 1024,
+      "height": 768,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "空Latent图像"
+    }
+  },
+  "6": {
+    "inputs": {
+      "text": "modern Chinese city street, old residential apartment buildings, aging concrete apartment blocks, weathered exterior walls, stained facade, balconies, metal window bars, outdoor air conditioner units, narrow urban street, empty street at midnight, Ghost Festival atmosphere, heavy rainstorm, lightning flashing across the dark sky, pouring rain hitting the windows and concrete walls, wet asphalt road, puddles reflecting dim street lights, cold oppressive mood, gloomy rainy night, high-angle view, bird's-eye view, long shot, cinematic composition, realistic urban environment, detailed textures, modern city, suspenseful atmosphere, film still",
+      "clip": [
+        "4",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP文本编码"
+    }
+  },
+  "7": {
+    "inputs": {
+      "text": "ancient Chinese architecture, traditional Chinese building, pagoda, temple, palace, curved roof, upturned eaves, wooden pavilion, water town, canal, river, historical town, ancient city, classical architecture, fantasy architecture, medieval, old village, lantern festival, people, crowd, warm cheerful atmosphere, daylight, sunny, close-up, low angle, anime, watercolor, sketch, text, watermark, logo, blurry, low quality",
+      "clip": [
+        "4",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP文本编码"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": [
+        "3",
+        0
+      ],
+      "vae": [
+        "4",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE解码"
+    }
+  },
+  "9": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "保存图像"
+    }
+  }
+}

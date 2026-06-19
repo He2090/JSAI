@@ -1,0 +1,82 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Version>1.2.4</Version>
+    <AssemblyVersion>1.2.4.0</AssemblyVersion>
+    <FileVersion>1.2.4.0</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\Get_imageAI.json" Link="Get_imageAI.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="..\Workflowsapi\**\*.*" Link="Workflowsapi\%(RecursiveDir)%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Include="membership-config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Updater\Updater.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\ClientConfigurator\ClientConfigurator.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="CopyUpdaterToOutput" AfterTargets="Build">
+    <MSBuild Projects="..\Updater\Updater.csproj" Targets="Build" Properties="Configuration=$(Configuration)" />
+    <MSBuild Projects="..\ClientConfigurator\ClientConfigurator.csproj" Targets="Build" Properties="Configuration=$(Configuration)" />
+    <ItemGroup>
+      <UpdaterArtifacts Include="..\Updater\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\Updater.exe"
+                        Condition="'$(RuntimeIdentifier)' != '' and Exists('..\Updater\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\Updater.exe')" />
+      <UpdaterArtifacts Include="..\Updater\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\Updater.dll"
+                        Condition="'$(RuntimeIdentifier)' != '' and Exists('..\Updater\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\Updater.dll')" />
+      <UpdaterArtifacts Include="..\Updater\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\Updater.deps.json"
+                        Condition="'$(RuntimeIdentifier)' != '' and Exists('..\Updater\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\Updater.deps.json')" />
+      <UpdaterArtifacts Include="..\Updater\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\Updater.runtimeconfig.json"
+                        Condition="'$(RuntimeIdentifier)' != '' and Exists('..\Updater\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\Updater.runtimeconfig.json')" />
+      <UpdaterArtifacts Include="..\Updater\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\update-config.json"
+                        Condition="'$(RuntimeIdentifier)' != '' and Exists('..\Updater\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\update-config.json')" />
+
+      <UpdaterArtifacts Include="..\Updater\bin\$(Configuration)\net8.0-windows\Updater.exe"
+                        Condition="Exists('..\Updater\bin\$(Configuration)\net8.0-windows\Updater.exe')" />
+      <UpdaterArtifacts Include="..\Updater\bin\$(Configuration)\net8.0-windows\Updater.dll"
+                        Condition="Exists('..\Updater\bin\$(Configuration)\net8.0-windows\Updater.dll')" />
+      <UpdaterArtifacts Include="..\Updater\bin\$(Configuration)\net8.0-windows\Updater.deps.json"
+                        Condition="Exists('..\Updater\bin\$(Configuration)\net8.0-windows\Updater.deps.json')" />
+      <UpdaterArtifacts Include="..\Updater\bin\$(Configuration)\net8.0-windows\Updater.runtimeconfig.json"
+                        Condition="Exists('..\Updater\bin\$(Configuration)\net8.0-windows\Updater.runtimeconfig.json')" />
+      <UpdaterArtifacts Include="..\Updater\bin\$(Configuration)\net8.0-windows\update-config.json"
+                        Condition="Exists('..\Updater\bin\$(Configuration)\net8.0-windows\update-config.json')" />
+
+      <ConfiguratorArtifacts Include="..\ClientConfigurator\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\ClientConfigurator.exe"
+                             Condition="'$(RuntimeIdentifier)' != '' and Exists('..\ClientConfigurator\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\ClientConfigurator.exe')" />
+      <ConfiguratorArtifacts Include="..\ClientConfigurator\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\ClientConfigurator.dll"
+                             Condition="'$(RuntimeIdentifier)' != '' and Exists('..\ClientConfigurator\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\ClientConfigurator.dll')" />
+      <ConfiguratorArtifacts Include="..\ClientConfigurator\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\ClientConfigurator.deps.json"
+                             Condition="'$(RuntimeIdentifier)' != '' and Exists('..\ClientConfigurator\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\ClientConfigurator.deps.json')" />
+      <ConfiguratorArtifacts Include="..\ClientConfigurator\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\ClientConfigurator.runtimeconfig.json"
+                             Condition="'$(RuntimeIdentifier)' != '' and Exists('..\ClientConfigurator\bin\$(Configuration)\net8.0-windows\$(RuntimeIdentifier)\ClientConfigurator.runtimeconfig.json')" />
+
+      <ConfiguratorArtifacts Include="..\ClientConfigurator\bin\$(Configuration)\net8.0-windows\ClientConfigurator.exe"
+                             Condition="Exists('..\ClientConfigurator\bin\$(Configuration)\net8.0-windows\ClientConfigurator.exe')" />
+      <ConfiguratorArtifacts Include="..\ClientConfigurator\bin\$(Configuration)\net8.0-windows\ClientConfigurator.dll"
+                             Condition="Exists('..\ClientConfigurator\bin\$(Configuration)\net8.0-windows\ClientConfigurator.dll')" />
+      <ConfiguratorArtifacts Include="..\ClientConfigurator\bin\$(Configuration)\net8.0-windows\ClientConfigurator.deps.json"
+                             Condition="Exists('..\ClientConfigurator\bin\$(Configuration)\net8.0-windows\ClientConfigurator.deps.json')" />
+      <ConfiguratorArtifacts Include="..\ClientConfigurator\bin\$(Configuration)\net8.0-windows\ClientConfigurator.runtimeconfig.json"
+                             Condition="Exists('..\ClientConfigurator\bin\$(Configuration)\net8.0-windows\ClientConfigurator.runtimeconfig.json')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(UpdaterArtifacts)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(ConfiguratorArtifacts)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

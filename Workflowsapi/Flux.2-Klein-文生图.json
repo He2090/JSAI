@@ -1,0 +1,139 @@
+{
+  "84": {
+    "inputs": {
+      "samples": [
+        "98",
+        0
+      ],
+      "vae": [
+        "92",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE解码"
+    }
+  },
+  "85": {
+    "inputs": {
+      "width": 720,
+      "height": 1280,
+      "batch_size": 1
+    },
+    "class_type": "EmptyFlux2LatentImage",
+    "_meta": {
+      "title": "空Latent图像（Flux2）"
+    }
+  },
+  "86": {
+    "inputs": {
+      "text": "anime, cartoon, illustration, cel shading, 2d art, flat color, painted look, 3d render, cgi, semi realistic skin, different character, different person, new person, different identity, identity drift, face swap, different face, different hairstyle, changed face shape, changed hairline, changed bangs, changed hair length, changed haircut, changed hair volume, different hair color, different eye color, different clothes, different outfit, different accessories, different hat, different age, different gender, changed gender, gender swap, changed sex, different body type, upper body, waist up, torso focus, inconsistent costume, inconsistent face, inconsistent character design, full body, wide shot, torso shot, shoulder to knee shot, multiple panels, grid, collage, split screen, contact sheet, character sheet, profile view, back view, monochrome, grayscale, lowres, blurry, deformed face, bad anatomy, extra eyes, extra mouth, extra ears, duplicate face, multiple characters, merged bodies, hands, hand gesture, holding object, props, same expression in every image, expressionless, blank face, emotionless, cropped head, text, watermark, logo, different beard, changed beard, different mustache, changed mustache, inconsistent facial hair, female, woman, girl, girlish face, feminine face, feminine makeup, lipstick, long feminine eyelashes, breasts, curvy female body, skirt, labels, signature, grid artifacts inside cells, wrong gender, changed facial proportions, changed jawline, changed hairstyle, changed hair color, side face, side profile, three-quarter view, three-quarter face, turned head, head turn, head tilt, tilted face, angled face, off-center face, looking over shoulder, unchanged expression, same expression as reference, same neutral expression, same face mood, barely changed expression, subtle expression only, sketch, pencil sketch, pencil drawing, line art, rough sketch, unfinished drawing, concept sketch, draft, storyboard sketch, desaturated, washed out, sepia, beige paper, low contrast, colorless, different art style, different rendering style, unfinished render",
+      "speak_and_recognation": {
+        "__value__": [
+          false,
+          true
+        ]
+      },
+      "clip": [
+        "91",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Negative Prompt)"
+    }
+  },
+  "91": {
+    "inputs": {
+      "clip_name": "qwen_3_8b_fp8mixed.safetensors",
+      "type": "flux2",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "加载CLIP"
+    }
+  },
+  "92": {
+    "inputs": {
+      "vae_name": "flux2-vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "加载VAE"
+    }
+  },
+  "93": {
+    "inputs": {
+      "text": "TARGET EXPRESSION: sad forlorn expression, inner eyebrows raised, softened tired eyes, mouth corners clearly downturned, no smile, the target expression is mandatory and must be obvious at first glance, do not keep the uploaded reference expression unless the target is neutral, the uploaded front portrait is only an identity, face-shape, hairstyle, and lighting reference, same character as the uploaded front reference portrait, change the facial expression clearly while preserving identity, fixed nine-expression sheet order: neutral expression, smile, angry, surprised, sad, laughing, thinking expression, peaceful, skeptical expression, clearly change eyebrow angle, eyelid openness, gaze focus, cheek tension, mouth corners, lips and jaw tension for the target emotion, each expression cell must be visibly different from the other eight expressions, exact straight-on front close-up head portrait only, face parallel to camera, head level, no side face, no three-quarter face, same face shape, same jawline, same nose shape, same base eye shape, same base lip shape, preserve identity while allowing eyebrows, eyelids and mouth expression to change, same hairstyle, same hairline, same bangs, same hair volume, same hair color, if facial hair exists, keep exact same beard, mustache, stubble shape, length, density, placement, and color across all expression cells, same lighting, same plain light gray background, same crop, same finished full-color portrait, adult male only, masculine facial structure, masculine jawline, stronger brow ridge, male hairline, same beard and facial hair if present, no woman, no girl, no feminine face, no feminine makeup, no long feminine eyelashes, character name: 赵巡令, fixed basic stats: 45岁，男性，体态威严稳重，面部轮廓深邃硬朗，眼神锐利，蓄有整洁的短须，身着大夏朝深色高级官服, fixed appearance: cinematic live action, photorealistic, film quality, natural skin texture, not anime, not cartoon, not cel shaded, not illustrated. A 45-year-old adult male, authoritative and stern, male body proportions, deep-set eyes, intense and piercing gaze, well-groomed short black hair in a traditional Chinese topknot, wearing heavy dark silk official robes of the Daxia Dynasty with intricate gold and silver embroidery, high-ranking official, cinematic lighting, sharp focus, high detail, dignified presence, fixed outfit: 大夏朝高级官员服饰，材质为厚重的深色丝绸，带有代表权力的暗纹刺绣，佩戴象征身份的玉质或金属腰带, fixed visual tags: 威严, 铁面无私, 刑部大吏, 45岁男性, 电影质感, 古代官员, 威严感, cinematic live action, not illustrated, centered close-up head portrait, crop above chest, no hands, no props, exactly one face only",
+      "speak_and_recognation": {
+        "__value__": [
+          false,
+          true
+        ]
+      },
+      "clip": [
+        "91",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)"
+    }
+  },
+  "98": {
+    "inputs": {
+      "seed": 77,
+      "steps": 6,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": [
+        "111",
+        0
+      ],
+      "positive": [
+        "93",
+        0
+      ],
+      "negative": [
+        "86",
+        0
+      ],
+      "latent_image": [
+        "85",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "K采样器"
+    }
+  },
+  "105": {
+    "inputs": {
+      "filename_prefix": "Flux2-Klein",
+      "images": [
+        "84",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "保存图像"
+    }
+  },
+  "111": {
+    "inputs": {
+      "unet_name": "flux-2-klein-9b-Q6_K.gguf"
+    },
+    "class_type": "UnetLoaderGGUF",
+    "_meta": {
+      "title": "Unet Loader (GGUF)"
+    }
+  }
+}
