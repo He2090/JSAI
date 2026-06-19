@@ -77,7 +77,7 @@ namespace JSAI.WinApp
             btnSetTextModel.Size = new Size(118, 30);
             btnSetTextModel.Text = "设为文本模型";
             btnSetImagePromptTextModel.Location = new Point(btnSetTextModel.Right + buttonGap, buttonY);
-            btnSetImagePromptTextModel.Size = new Size(146, 30);
+            btnSetImagePromptTextModel.Size = new Size(150, 30);
             btnSetImagePromptTextModel.Text = "设为图片提示词";
             btnSetImageModel.Location = new Point(btnSetImagePromptTextModel.Right + buttonGap, buttonY);
             btnSetImageModel.Size = new Size(118, 30);
@@ -139,10 +139,10 @@ namespace JSAI.WinApp
 
             _localModelListHost = CreateModelConfigurationPage(
                 localTab,
-                "用于 Ollama、Stable Diffusion WebUI、局域网服务等本机/内网模型。地址应使用 http://127.0.0.1、localhost 或局域网 IP。");
+                "本地模型只需要填写：模型名称、模型地址、模型KEY、模型类别。适用于 Ollama、Stable Diffusion WebUI、局域网服务等本机或内网模型。");
             _comfyUiModelListHost = CreateModelConfigurationPage(
                 comfyTab,
-                "ComfyUI API 使用方式：先启动 ComfyUI，并确认可访问 http://127.0.0.1:8188；模型地址填写 ComfyUI 根地址，ID 填检查点或工作流需要的模型名；视频/图片工作流请在“子模型/工作流”里选择对应 JSON。");
+                "ComfyUI API 使用方式：先启动 ComfyUI，确认 http://127.0.0.1:8188 可访问；地址填写 ComfyUI 根地址；图片/视频工作流必须选择对应 JSON。");
             _cloudModelListHost = CreateModelConfigurationPage(
                 cloudTab,
                 "用于 Gemini 等云端文本接口。请填写云端 API 地址、Key 和模型 ID；涉及密钥的配置会在保存时加密。");

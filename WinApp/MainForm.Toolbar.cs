@@ -15,10 +15,7 @@ namespace JSAI.WinApp
             _modelCallLogButton.Width = 118;
             _modelSettingsButton.Width = 104;
 
-            if (_runWorkflowButton.Parent is not FlowLayoutPanel actions)
-            {
-                return;
-            }
+            var actions = _toolbarActionsPanel;
 
             if (!actions.Controls.Contains(_modelCallLogButton))
             {
@@ -43,8 +40,7 @@ namespace JSAI.WinApp
             actions.Controls.SetChildIndex(_importWorkflowButton, 4);
             actions.Controls.SetChildIndex(_exportWorkflowButton, 5);
             actions.Controls.SetChildIndex(_modelCallLogButton, 6);
-            actions.Controls.SetChildIndex(_runWorkflowButton, 7);
-            actions.Controls.SetChildIndex(_modelSettingsButton, 8);
+            actions.Controls.SetChildIndex(_modelSettingsButton, 7);
         }
 
         private void OpenModelCallLog()

@@ -16,11 +16,9 @@ namespace JSAI.WinApp
     {
         private static readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(6) };
 
-        private const int FormWidth = 540;
-        private const int TopModeOffset = 44;
-        private const int ExpandedClientHeight = 474;
-        private const int CompactClientHeight = 436;
-        private const int WorkflowRowShift = 38;
+        private const int FormWidth = 680;
+        private const int ExpandedClientHeight = 560;
+        private const int CompactClientHeight = 520;
 
         private readonly ModelInfo? _editingModel;
         private readonly ModelEditorKind? _initialKind;
@@ -101,28 +99,34 @@ namespace JSAI.WinApp
         private void ConfigureExpandedEditorLayout()
         {
             ClientSize = new Size(FormWidth, ExpandedClientHeight);
+            MinimumSize = new Size(FormWidth + 18, CompactClientHeight + 48);
             Text = _editingModel == null ? "新增模型" : "编辑模型";
 
             foreach (var label in new[] { label1, label2, label3, label4, label5, label6 })
             {
                 label.AutoSize = false;
-                label.Left = 12;
-                label.Width = 112;
+                label.Left = 18;
+                label.Width = 132;
+                label.TextAlign = ContentAlignment.MiddleLeft;
             }
 
             foreach (var input in new Control[] { txtId, txtName, comboWorkflowJson, txtUrl, txtKey, comboCategory })
             {
-                input.Left = 132;
-                input.Width = 384;
+                input.Left = 160;
+                input.Width = 486;
             }
 
-            btnTest.Left = 132;
+            btnTest.Left = 160;
+            btnTest.Width = 140;
             btnTest.Text = "测试连接";
-            txtTestResult.Left = 132;
-            txtTestResult.Width = 384;
-            btnOk.Left = 306;
+            txtTestResult.Left = 160;
+            txtTestResult.Width = 486;
+            txtTestResult.Height = 88;
+            btnOk.Left = 430;
+            btnOk.Width = 104;
             btnOk.Text = "确定";
-            btnCancel.Left = 416;
+            btnCancel.Left = 542;
+            btnCancel.Width = 104;
             btnCancel.Text = "取消";
         }
 
@@ -137,8 +141,8 @@ namespace JSAI.WinApp
             {
                 Left = 12,
                 Top = 8,
-                Width = 504,
-                Height = 34,
+                Width = 634,
+                Height = 38,
                 Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
             };
             _modeTabs.TabPages.Add(new TabPage("本地模型"));
@@ -156,11 +160,6 @@ namespace JSAI.WinApp
                 UpdateWorkflowJsonAvailability();
                 MarkDirty();
             };
-
-            foreach (var control in Controls.Cast<Control>().Where(control => control != _modeTabs).ToList())
-            {
-                control.Top += TopModeOffset;
-            }
 
             Controls.Add(_modeTabs);
             _modeTabs.BringToFront();
@@ -193,7 +192,6 @@ namespace JSAI.WinApp
             switch (_currentKind)
             {
                 case ModelEditorKind.ComfyUi:
-                    label1.Text = "配置ID";
                     label2.Text = "API名称";
                     label6.Text = "JSON名称";
                     label4.Text = "ComfyUI地址";
@@ -201,7 +199,7 @@ namespace JSAI.WinApp
                     label3.Text = "模型类别";
                     break;
                 case ModelEditorKind.Cloud:
-                    label1.Text = "模型名称/ID";
+                    label1.Text = "模型名称";
                     label2.Text = "平台名称";
                     label6.Text = "工作流JSON";
                     label4.Text = "模型地址";
@@ -209,7 +207,6 @@ namespace JSAI.WinApp
                     label3.Text = "模型类别";
                     break;
                 default:
-                    label1.Text = "模型ID";
                     label2.Text = "模型名称";
                     label6.Text = "工作流JSON";
                     label4.Text = "模型地址";
@@ -217,6 +214,8 @@ namespace JSAI.WinApp
                     label3.Text = "模型类别";
                     break;
             }
+
+            RepositionEditorFields();
         }
 
         private void MarkDirty()
@@ -229,7 +228,7 @@ namespace JSAI.WinApp
 
         private async void btnTest_Click(object sender, EventArgs e)
         {
-            var modelId = txtId.Text.Trim();
+            var modelId = ResolveEnteredModelId();
             var modelName = txtName.Text.Trim();
             var url = txtUrl.Text.Trim();
             var key = txtKey.Text.Trim();
@@ -238,9 +237,9 @@ namespace JSAI.WinApp
                 : ModelCategory.Text;
             var workflowJson = GetResolvedWorkflowJsonInput(url, category);
 
-            if (string.IsNullOrWhiteSpace(modelId) || string.IsNullOrWhiteSpace(url))
+            if (string.IsNullOrWhiteSpace(modelId) || string.IsNullOrWhiteSpace(modelName) || string.IsNullOrWhiteSpace(url))
             {
-                MessageBox.Show(this, "请填写模型ID和URL", "检查输入", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, "请填写模型名称和模型地址", "检查输入", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -279,7 +278,7 @@ namespace JSAI.WinApp
 
         private void btnOk_Click(object sender, EventArgs e)
         {
-            var id = txtId.Text.Trim();
+            var id = ResolveEnteredModelId();
             var name = txtName.Text.Trim();
             var url = txtUrl.Text.Trim();
             var key = txtKey.Text.Trim();
@@ -290,7 +289,7 @@ namespace JSAI.WinApp
 
             if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(url))
             {
-                MessageBox.Show(this, "请填写ID、模型名和URL", "检查输入", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, "请填写模型名称和模型地址", "检查输入", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -324,29 +323,73 @@ namespace JSAI.WinApp
             Close();
         }
 
+        private string ResolveEnteredModelId()
+        {
+            if (_currentKind == ModelEditorKind.Cloud)
+            {
+                return txtId.Text.Trim();
+            }
+
+            return txtName.Text.Trim();
+        }
+
         private void UpdateWorkflowJsonAvailability()
         {
             var category = comboCategory.SelectedItem is ModelCategory selectedCategory
                 ? selectedCategory
                 : ModelCategory.Text;
-            var visible = _currentKind == ModelEditorKind.ComfyUi ||
-                          ShouldShowWorkflowJsonField(txtUrl.Text, category);
+            var visible = _currentKind == ModelEditorKind.ComfyUi;
 
             label6.Visible = visible;
             comboWorkflowJson.Visible = visible;
 
-            var shift = visible ? 0 : -WorkflowRowShift;
-            label4.Top = 132 + shift + TopModeOffset;
-            txtUrl.Top = 129 + shift + TopModeOffset;
-            label5.Top = 170 + shift + TopModeOffset;
-            txtKey.Top = 167 + shift + TopModeOffset;
-            label3.Top = 208 + shift + TopModeOffset;
-            comboCategory.Top = 205 + shift + TopModeOffset;
-            btnTest.Top = 276 + shift + TopModeOffset;
-            txtTestResult.Top = 316 + shift + TopModeOffset;
-            btnOk.Top = 386 + shift + TopModeOffset;
-            btnCancel.Top = 386 + shift + TopModeOffset;
+            RepositionEditorFields();
             ClientSize = new Size(ClientSize.Width, visible ? ExpandedClientHeight : CompactClientHeight);
+        }
+
+        private void RepositionEditorFields()
+        {
+            var workflowVisible = comboWorkflowJson.Visible;
+            var showId = _currentKind == ModelEditorKind.Cloud;
+            label1.Visible = showId;
+            txtId.Visible = showId;
+
+            var top = 64;
+            const int labelHeight = 28;
+            const int inputHeight = 30;
+            const int rowGap = 14;
+
+            void Place(Control label, Control input)
+            {
+                label.Top = top + 2;
+                label.Height = labelHeight;
+                input.Top = top;
+                input.Height = inputHeight;
+                top += inputHeight + rowGap;
+            }
+
+            if (showId)
+            {
+                Place(label1, txtId);
+            }
+
+            Place(label2, txtName);
+            if (workflowVisible)
+            {
+                Place(label6, comboWorkflowJson);
+            }
+
+            Place(label4, txtUrl);
+            Place(label5, txtKey);
+            Place(label3, comboCategory);
+
+            top += 18;
+            btnTest.Top = top;
+            top += btnTest.Height + 12;
+            txtTestResult.Top = top;
+            top += txtTestResult.Height + 18;
+            btnOk.Top = top;
+            btnCancel.Top = top;
         }
 
         private static bool ShouldShowWorkflowJsonField(string url, ModelCategory category)
@@ -797,7 +840,7 @@ namespace JSAI.WinApp
 
         private string GetResolvedWorkflowJsonInput(string url, ModelCategory category)
         {
-            if (!ShouldShowWorkflowJsonField(url, category))
+            if (_currentKind != ModelEditorKind.ComfyUi || !ShouldShowWorkflowJsonField(url, category))
             {
                 return string.Empty;
             }

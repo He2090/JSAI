@@ -74,7 +74,7 @@ namespace JSAI.WinApp
                 ColumnCount = 1,
                 RowCount = 4,
             };
-            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 68F));
+            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 82F));
             root.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             root.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
