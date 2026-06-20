@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -25,6 +26,8 @@ namespace JSAI.WinApp
         private GroupBox? _nodeDefaultsGroupBox;
         private TableLayoutPanel? _nodeDefaultsLayout;
         private Button? _nodeDefaultsSettingsButton;
+        private readonly Button _importModelConfigButton = new();
+        private readonly Button _exportModelConfigButton = new();
         private TabControl? _modelConfigTabs;
         private Panel? _localModelListHost;
         private Panel? _comfyUiModelListHost;
@@ -85,6 +88,18 @@ namespace JSAI.WinApp
             btnSetVideoModel.Location = new Point(btnSetImageModel.Right + buttonGap, buttonY);
             btnSetVideoModel.Size = new Size(118, 30);
             btnSetVideoModel.Text = "设为视频模型";
+            _importModelConfigButton.Location = new Point(btnSetVideoModel.Right + 22, buttonY);
+            _importModelConfigButton.Size = new Size(104, 30);
+            _importModelConfigButton.Text = "导入配置";
+            _importModelConfigButton.UseVisualStyleBackColor = true;
+            _importModelConfigButton.Click += (_, _) => ImportModelConfig();
+            _exportModelConfigButton.Location = new Point(_importModelConfigButton.Right + buttonGap, buttonY);
+            _exportModelConfigButton.Size = new Size(104, 30);
+            _exportModelConfigButton.Text = "导出配置";
+            _exportModelConfigButton.UseVisualStyleBackColor = true;
+            _exportModelConfigButton.Click += (_, _) => ExportModelConfig();
+            Controls.Add(_importModelConfigButton);
+            Controls.Add(_exportModelConfigButton);
 
             groupBox1.Text = "当前选择";
             groupBox1.Location = new Point(12, 400);
@@ -145,7 +160,7 @@ namespace JSAI.WinApp
                 "ComfyUI API 使用方式：先启动 ComfyUI，确认 http://127.0.0.1:8188 可访问；地址填写 ComfyUI 根地址；图片/视频工作流必须选择对应 JSON。");
             _cloudModelListHost = CreateModelConfigurationPage(
                 cloudTab,
-                "用于 Gemini 等云端文本接口。请填写云端 API 地址、Key 和模型 ID；涉及密钥的配置会在保存时加密。");
+                "云端模型需要填写：平台名称、模型名称、模型地址、模型Key、模型类别。模型名称会作为实际调用模型ID使用。");
 
             _modelConfigTabs.TabPages.Add(localTab);
             _modelConfigTabs.TabPages.Add(comfyTab);
@@ -194,6 +209,30 @@ namespace JSAI.WinApp
             return host;
         }
 
+
+        private void UpdateModelListColumnHeaders()
+        {
+            colSource.Text = "来源";
+            colCategory.Text = "类别";
+            colUrl.Text = "地址";
+            colKey.Text = "Key";
+
+            switch (_modelConfigTabs?.SelectedIndex)
+            {
+                case 1:
+                    colName.Text = "API名称";
+                    colId.Text = "模型名称";
+                    break;
+                case 2:
+                    colName.Text = "平台名称";
+                    colId.Text = "模型名称";
+                    break;
+                default:
+                    colName.Text = "模型名称";
+                    colId.Text = "模型ID";
+                    break;
+            }
+        }
         private void MoveModelListToActiveTab()
         {
             var host = GetActiveModelListHost();
@@ -806,6 +845,74 @@ namespace JSAI.WinApp
             ModelConfig.Save(_settings);
         }
 
+
+        private void ImportModelConfig()
+        {
+            using var dialog = new OpenFileDialog
+            {
+                Title = "导入模型配置",
+                Filter = "模型配置 JSON (*.json)|*.json|所有文件 (*.*)|*.*",
+                CheckFileExists = true,
+            };
+
+            if (dialog.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+
+            try
+            {
+                var json = File.ReadAllText(dialog.FileName);
+                var imported = JsonSerializer.Deserialize<ModelSettings>(json);
+                if (imported == null)
+                {
+                    MessageBox.Show(this, "配置文件格式无效。", "导入失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                var confirm = MessageBox.Show(this, "导入后会替换当前模型配置，是否继续？", "确认导入", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (confirm != DialogResult.Yes)
+                {
+                    return;
+                }
+
+                ModelConfig.Save(imported);
+                _settings = ModelConfig.Load();
+                ReloadSettingsAndRefreshViews();
+                MessageBox.Show(this, "模型配置已导入。", "导入成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"导入模型配置失败：{ex.Message}", "导入失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void ExportModelConfig()
+        {
+            using var dialog = new SaveFileDialog
+            {
+                Title = "导出模型配置",
+                Filter = "模型配置 JSON (*.json)|*.json|所有文件 (*.*)|*.*",
+                FileName = $"JSAI_model_settings_{DateTime.Now:yyyyMMdd_HHmmss}.json",
+                OverwritePrompt = true,
+            };
+
+            if (dialog.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+
+            try
+            {
+                var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(dialog.FileName, json);
+                MessageBox.Show(this, "模型配置已导出。", "导出成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"导出模型配置失败：{ex.Message}", "导出失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
         private void btnAddModel_Click(object sender, EventArgs e)
         {
             ShowModelEditor();
@@ -1070,3 +1177,4 @@ namespace JSAI.WinApp
         }
     }
 }
+

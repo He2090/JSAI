@@ -239,7 +239,7 @@ namespace JSAI.WinApp
 
             if (string.IsNullOrWhiteSpace(modelId) || string.IsNullOrWhiteSpace(modelName) || string.IsNullOrWhiteSpace(url))
             {
-                MessageBox.Show(this, "请填写模型名称和模型地址", "检查输入", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, GetRequiredFieldsMessage(), "检查输入", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -289,7 +289,7 @@ namespace JSAI.WinApp
 
             if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(url))
             {
-                MessageBox.Show(this, "请填写模型名称和模型地址", "检查输入", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, GetRequiredFieldsMessage(), "检查输入", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -321,6 +321,13 @@ namespace JSAI.WinApp
 
             DialogResult = DialogResult.OK;
             Close();
+        }
+
+        private string GetRequiredFieldsMessage()
+        {
+            return _currentKind == ModelEditorKind.Cloud
+                ? "请填写平台名称、模型名称和模型地址"
+                : "请填写模型名称和模型地址";
         }
 
         private string ResolveEnteredModelId()
@@ -951,3 +958,4 @@ namespace JSAI.WinApp
         }
     }
 }
+
